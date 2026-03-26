@@ -1,0 +1,23 @@
+[
+  {
+    "orientacao": "Leste",
+    "tipo_via": "Avenida",
+    "largura_via": 18,
+    "dist_centro": 4,
+    "infraestrutura": [
+      "pav"
+    ],
+    "ca_utilizado": 0.258552,
+    "to_utilizado": 60,
+    "densidade": 22.8,
+    "eficiencia": 74.07407407407408,
+    "recuos": 10000,
+    "score_infra": 20,
+    "score_acess": 100,
+    "score_geral": 60,
+    "ref_m1_id": "20260326173035",
+    "ref_m2_id": "20260326175450",
+    "id": "20260326180140",
+    "created_at": "2026-03-26T18:01:40.000524"
+  }
+]

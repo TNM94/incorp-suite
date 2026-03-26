@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Módulo 5 — Demanda Regional</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-icon">🏗</span>
+    <span class="brand-name">IncorpSuite</span>
+    <span class="brand-module">/ Módulo 5 — Análise de Demanda Regional</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="novaAnalise()">+ Nova Análise</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-label">Módulos</p>
+      <a href="/" class="sidebar-item"><span class="sidebar-dot"></span> Análise do Terreno</a>
+      <a href="/produto" class="sidebar-item"><span class="sidebar-dot" style="background:#22d3ee"></span> Estudo do Produto</a>
+      <a href="/viabilidade" class="sidebar-item"><span class="sidebar-dot" style="background:#34d399"></span> Viabilidade Financeira</a>
+      <a href="/urbanistica" class="sidebar-item"><span class="sidebar-dot" style="background:#f59e0b"></span> Análise Urbanística</a>
+      <a href="/demanda" class="sidebar-item active"><span class="sidebar-dot" style="background:#e879f9"></span> Demanda Regional</a>
+      <a href="#" class="sidebar-item disabled">Simulação de VGV</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <h1 class="page-title">Análise de Demanda Regional</h1>
+      <p class="page-sub">Avalie o potencial de absorção do mercado local e o enquadramento do produto.</p>
+    </div>
+
+    <!-- BANNER REFS -->
+    <div class="ref-banner" id="ref-banner" style="display:none">
+      <span class="ref-icon">📋</span>
+      <span class="ref-text">
+        Terreno: <strong id="ref-nome">—</strong>
+        &nbsp;|&nbsp; VGV (M2): <strong id="ref-vgv">—</strong>
+        &nbsp;|&nbsp; Unidades: <strong id="ref-unidades">—</strong>
+        &nbsp;|&nbsp; Área privativa: <strong id="ref-privativa">—</strong> m²
+      </span>
+    </div>
+
+    <form id="form" onsubmit="return false;">
+
+      <!-- DADOS DA REGIÃO -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🌍</span>
+          <h2 class="card-title">Dados da Região</h2>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Cidade e Estado</label>
+            <input type="text" id="cidade" placeholder="Ex: Goiânia, GO"/>
+          </div>
+          <div class="field">
+            <label>Raio de Influência</label>
+            <select id="raio">
+              <option value="">Selecione...</option>
+              <option value="1">1 km</option>
+              <option value="2">2 km</option>
+              <option value="5">5 km</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Renda Média Familiar (R$)</label>
+            <input type="number" id="renda" placeholder="Ex: 5500" min="0" step="100" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>População Estimada no Raio</label>
+            <input type="number" id="populacao" placeholder="Ex: 45000" min="0" step="100" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>Lançamentos nos últimos 3 anos</label>
+            <input type="number" id="lancamentos" placeholder="Ex: 12" min="0" step="1" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>Velocidade Média de Absorção (meses)
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">?</span>
+                <span class="tooltip-box">Tempo médio em meses para que um empreendimento seja absorvido pelo mercado local.</span>
+              </span>
+            </label>
+            <input type="number" id="velocidade" placeholder="Ex: 18" min="1" step="1" oninput="calcular()"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESTAQUE MCMV -->
+      <div class="mcmv-card" id="mcmv-card">
+        <div class="mcmv-label">Enquadramento MCMV / Faixa de Renda</div>
+        <div class="mcmv-faixa" id="mcmv-faixa">—</div>
+        <div class="mcmv-desc" id="mcmv-desc">Informe a renda média familiar para calcular</div>
+        <div class="mcmv-ticket" id="mcmv-ticket-wrap" style="display:none">
+          Ticket máximo compatível: <strong id="mcmv-ticket">—</strong>
+        </div>
+      </div>
+
+      <!-- TICKET vs VGV -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">💲</span>
+          <h2 class="card-title">Compatibilidade: Ticket Máximo vs VGV</h2>
+        </div>
+        <div class="ticket-compare" id="ticket-compare">
+          <div class="ticket-side">
+            <p class="ticket-sub">Ticket Máximo por Unidade</p>
+            <p class="ticket-val" id="ticket-val">—</p>
+            <p class="ticket-formula">Renda × 30% × 12 × 20 anos</p>
+          </div>
+          <div class="ticket-compat" id="ticket-compat">
+            <div class="compat-icon" id="compat-icon">—</div>
+            <div class="compat-label" id="compat-label">—</div>
+          </div>
+          <div class="ticket-side">
+            <p class="ticket-sub">VGV por Unidade (M2)</p>
+            <p class="ticket-val ticket-vgv" id="vgv-por-unidade">—</p>
+            <p class="ticket-formula">VGV ÷ Total de Unidades</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABELA DEMANDA vs OFERTA -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📈</span>
+          <h2 class="card-title">Demanda vs Oferta vs Déficit</h2>
+        </div>
+        <div class="dvo-table">
+          <div class="dvo-row dvo-header">
+            <span>Indicador</span><span>Valor</span><span>Interpretação</span>
+          </div>
+          <div class="dvo-row">
+            <span class="dvo-label">Demanda Estimada / ano</span>
+            <span class="dvo-val" id="dvo-demanda">—</span>
+            <span class="dvo-note">População × 3%</span>
+          </div>
+          <div class="dvo-row">
+            <span class="dvo-label">Oferta Absorvida / ano</span>
+            <span class="dvo-val" id="dvo-oferta">—</span>
+            <span class="dvo-note">Lançamentos × (12 ÷ velocidade)</span>
+          </div>
+          <div class="dvo-row dvo-highlight">
+            <span class="dvo-label">Déficit Potencial</span>
+            <span class="dvo-val" id="dvo-deficit">—</span>
+            <span class="dvo-note" id="dvo-deficit-note">Demanda − Oferta</span>
+          </div>
+          <div class="dvo-row">
+            <span class="dvo-label">Índice de Saturação</span>
+            <span class="dvo-val" id="dvo-saturacao">—</span>
+            <span class="dvo-note" id="dvo-sat-note">Lançamentos / (demanda÷10) × 100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCORES + GAUGE -->
+      <div class="card card-results">
+        <div class="card-header">
+          <span class="card-icon">🎯</span>
+          <h2 class="card-title">Score de Atratividade Regional</h2>
+        </div>
+        <div class="gauges-row">
+          <div class="gauge-wrap">
+            <canvas id="gauge-demanda" width="160" height="100"></canvas>
+            <p class="gauge-label">Demanda</p>
+            <p class="gauge-val" id="score-dem-val">—</p>
+          </div>
+          <div class="gauge-wrap">
+            <canvas id="gauge-renda" width="160" height="100"></canvas>
+            <p class="gauge-label">Renda / Compatib.</p>
+            <p class="gauge-val" id="score-renda-val">—</p>
+          </div>
+          <div class="gauge-wrap gauge-geral">
+            <canvas id="gauge-atrat" width="200" height="120"></canvas>
+            <p class="gauge-label">Atratividade Geral</p>
+            <p class="gauge-val gauge-geral-val" id="score-atrat-val">—</p>
+          </div>
+        </div>
+        <div class="score-badges" id="score-badges"></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="novaAnalise()">Limpar</button>
+        <button type="button" class="btn btn-primary" onclick="salvar()">
+          <span>💾</span> Salvar Análise
+        </button>
+      </div>
+
+    </form>
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+
+<script>
+let _vgv = 0, _unidades = 0, _privativa = 0, _m1nome = '';
+
+async function carregarRefs() {
+  try {
+    const [r1, r2] = await Promise.all([fetch('/api/analises'), fetch('/api/produto/lista')]);
+    const l1 = await r1.json(), l2 = await r2.json();
+    const m1 = l1.length ? l1[l1.length-1] : {};
+    const m2 = l2.length ? l2[l2.length-1] : {};
+    _vgv       = m2.vgv_estimado    || 0;
+    _unidades  = m2.total_unidades  || 0;
+    _privativa = m2.area_privativa  || 0;
+    _m1nome    = m1.nome            || '';
+    if (_m1nome || _vgv) {
+      document.getElementById('ref-banner').style.display = 'flex';
+      s('ref-nome',     _m1nome || '—');
+      s('ref-vgv',      _vgv > 0 ? fmtBRL(_vgv) : '—');
+      s('ref-unidades', _unidades  || '—');
+      s('ref-privativa',_privativa > 0 ? fmt(_privativa) : '—');
+    }
+    calcular();
+  } catch(e) {}
+}
+carregarRefs();
+
+const fmt    = n => n.toLocaleString('pt-BR', {maximumFractionDigits:0});
+const fmtBRL = n => 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:0,maximumFractionDigits:0});
+const g      = id => parseFloat(document.getElementById(id).value) || 0;
+const s      = (id,v) => { document.getElementById(id).textContent = v; };
+
+// ── MCMV ────────────────────────────────────────────────
+const FAIXAS = [
+  { limite: 2640,  label: 'Faixa 1',       desc: 'MCMV Faixa 1 — Subsidiado integralmente pelo governo',           cls: 'mcmv-f1' },
+  { limite: 4400,  label: 'Faixa 2',       desc: 'MCMV Faixa 2 — Subsídio parcial e juros reduzidos',              cls: 'mcmv-f2' },
+  { limite: 8000,  label: 'Faixa 3',       desc: 'MCMV Faixa 3 — Financiamento com juros abaixo do mercado',       cls: 'mcmv-f3' },
+  { limite: Infinity, label: 'Mercado Livre', desc: 'Acima da faixa MCMV — Produto de mercado, sem subsídio direto', cls: 'mcmv-ml' },
+];
+
+function getFaixa(renda) {
+  return FAIXAS.find(f => renda <= f.limite) || FAIXAS[3];
+}
+
+function calcular() {
+  const renda    = g('renda');
+  const pop      = g('populacao');
+  const lanc     = g('lancamentos');
+  const veloc    = g('velocidade');
+
+  // MCMV
+  if (renda > 0) {
+    const faixa = getFaixa(renda);
+    const card  = document.getElementById('mcmv-card');
+    card.className = 'mcmv-card ' + faixa.cls;
+    s('mcmv-faixa', faixa.label);
+    s('mcmv-desc',  faixa.desc);
+    const ticket = renda * 0.30 * 12 * 20;
+    document.getElementById('mcmv-ticket-wrap').style.display = 'block';
+    s('mcmv-ticket', fmtBRL(ticket));
+
+    // Ticket compare
+    s('ticket-val', fmtBRL(ticket));
+    const vguPU = _unidades > 0 ? _vgv / _unidades : 0;
+    s('vgv-por-unidade', vguPU > 0 ? fmtBRL(vguPU) : '—');
+    if (vguPU > 0) {
+      const compat = ticket >= vguPU;
+      const icon  = document.getElementById('compat-icon');
+      const lbl   = document.getElementById('compat-label');
+      icon.textContent = compat ? '✅' : '❌';
+      lbl.textContent  = compat ? 'Compatível' : 'Incompatível';
+      icon.parentElement.className = 'ticket-compat ' + (compat ? 'compat-ok' : 'compat-no');
+    }
+  } else {
+    document.getElementById('mcmv-card').className = 'mcmv-card';
+    s('mcmv-faixa', '—');
+    s('mcmv-desc', 'Informe a renda média familiar para calcular');
+    document.getElementById('mcmv-ticket-wrap').style.display = 'none';
+  }
+
+  // Demanda vs Oferta
+  const demanda  = pop * 0.03;
+  const oferta   = veloc > 0 ? lanc * (12 / veloc) : 0;
+  const deficit  = demanda - oferta;
+  const saturac  = demanda > 0 ? (lanc / (demanda / 10)) * 100 : 0;
+
+  s('dvo-demanda',  demanda  > 0 ? fmt(Math.round(demanda))  + ' un/ano' : '—');
+  s('dvo-oferta',   oferta   > 0 ? fmt(Math.round(oferta))   + ' un/ano' : '—');
+
+  if (demanda > 0 || oferta > 0) {
+    const defEl = document.getElementById('dvo-deficit');
+    defEl.textContent = fmt(Math.round(Math.abs(deficit))) + ' un/ano';
+    defEl.style.color = deficit > 0 ? '#4ade80' : '#f87171';
+    s('dvo-deficit-note', deficit >= 0 ? 'Déficit — mercado com espaço' : 'Superávit — mercado saturado');
+    s('dvo-saturacao', saturac > 0 ? saturac.toFixed(1) + '%' : '—');
+    const satEl = document.getElementById('dvo-sat-note');
+    satEl.textContent = saturac > 100 ? 'Mercado saturado' : saturac > 50 ? 'Mercado em equilíbrio' : 'Mercado com demanda reprimida';
+    satEl.style.color = saturac > 100 ? '#f87171' : saturac > 50 ? '#facc15' : '#4ade80';
+  }
+
+  // Scores
+  const scoreDem  = deficit > 500 ? 100 : deficit > 200 ? 70 : deficit > 0 ? 40 : 10;
+  const ticket    = renda > 0 ? renda * 0.30 * 12 * 20 : 0;
+  const vguPU     = _unidades > 0 ? _vgv / _unidades : 0;
+  const scoreRend = vguPU > 0 && ticket > 0
+    ? Math.min(100, Math.round((ticket / vguPU) * 100))
+    : 0;
+  const scoreAtrat = (pop > 0 && renda > 0)
+    ? Math.round((scoreDem * 0.6) + (scoreRend * 0.4))
+    : 0;
+
+  drawGauge('gauge-demanda', scoreDem,  160, 100, 60);
+  drawGauge('gauge-renda',   scoreRend, 160, 100, 60);
+  drawGauge('gauge-atrat',   scoreAtrat,200, 120, 76);
+  s('score-dem-val',   pop > 0 ? Math.round(scoreDem)  : '—');
+  s('score-renda-val', vguPU > 0 && ticket > 0 ? Math.round(scoreRend) : '—');
+  s('score-atrat-val', scoreAtrat > 0 ? Math.round(scoreAtrat) : '—');
+  renderBadge(scoreAtrat);
+
+  return { renda, pop, lanc, veloc, demanda, oferta, deficit, saturac,
+           ticket, scoreDem, scoreRend, scoreAtrat };
+}
+
+// ── Gauge (reutilizado do M4) ────────────────────────────
+function drawGauge(id, value, w, h, radius) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+  const cx = w/2, cy = h-12;
+  ctx.beginPath(); ctx.arc(cx,cy,radius,Math.PI,2*Math.PI);
+  ctx.lineWidth=14; ctx.strokeStyle='#334155'; ctx.stroke();
+  const pct = Math.min(Math.max(value,0),100)/100;
+  const cor = value>=70?'#4ade80':value>=40?'#facc15':'#f87171';
+  ctx.beginPath(); ctx.arc(cx,cy,radius,Math.PI,Math.PI+pct*Math.PI);
+  ctx.lineWidth=14; ctx.strokeStyle=cor; ctx.lineCap='round'; ctx.stroke();
+  [0,50,100].forEach(m=>{
+    const a=Math.PI+(m/100)*Math.PI;
+    ctx.fillStyle='#475569'; ctx.font='9px system-ui'; ctx.textAlign='center';
+    ctx.fillText(m, cx+Math.cos(a)*(radius+10), cy+Math.sin(a)*(radius+10));
+  });
+}
+
+function renderBadge(score) {
+  if (!score) { document.getElementById('score-badges').innerHTML=''; return; }
+  const [txt,cls] = score>=70?['Alta atratividade regional — produto bem posicionado','badge-green']
+    :score>=40?['Atratividade moderada — avaliar posicionamento de preço','badge-yellow']
+    :['Baixa atratividade — mercado saturado ou renda incompatível','badge-red'];
+  document.getElementById('score-badges').innerHTML=`<span class="score-badge ${cls}">${txt}</span>`;
+}
+
+function novaAnalise() {
+  document.getElementById('form').reset();
+  ['dvo-demanda','dvo-oferta','dvo-deficit','dvo-saturacao',
+   'ticket-val','vgv-por-unidade','score-dem-val','score-renda-val','score-atrat-val',
+   'mcmv-faixa','mcmv-ticket'].forEach(id=>s(id,'—'));
+  document.getElementById('mcmv-card').className='mcmv-card';
+  s('mcmv-desc','Informe a renda média familiar para calcular');
+  document.getElementById('mcmv-ticket-wrap').style.display='none';
+  document.getElementById('compat-icon').textContent='—';
+  s('compat-label','—');
+  document.getElementById('score-badges').innerHTML='';
+  ['gauge-demanda','gauge-renda','gauge-atrat'].forEach(id=>{
+    const c=document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height);
+  });
+}
+
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.className='toast show '+type; setTimeout(()=>t.className='toast',3000);
+}
+
+async function salvar() {
+  const d = calcular();
+  if (!d.pop && !d.renda) { showToast('Preencha pelo menos população e renda.','error'); return; }
+  const payload = {
+    cidade:        document.getElementById('cidade').value,
+    raio:          document.getElementById('raio').value,
+    renda:         d.renda, populacao: d.pop,
+    lancamentos:   d.lanc,  velocidade: d.veloc,
+    demanda:       d.demanda, oferta: d.oferta,
+    deficit:       d.deficit, saturacao: d.saturac,
+    ticket_max:    d.ticket,
+    score_demanda: d.scoreDem, score_renda: d.scoreRend,
+    score_atrat:   d.scoreAtrat,
+    vgv_ref:       _vgv, unidades_ref: _unidades,
+  };
+  const res  = await fetch('/api/demanda/salvar',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const data = await res.json();
+  if (data.success) showToast('✅ Análise de demanda salva!');
+  else showToast('Erro ao salvar.','error');
+}
+</script>
+
+</body>
+</html>

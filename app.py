@@ -37,6 +37,23 @@ def salvar():
 def listar():
     return jsonify(_load(DATA_FILE))
 
+# ── Módulo 5 ──────────────────────────────────────────────
+DEM_FILE = os.path.join(os.path.dirname(__file__), 'data', 'demandas.json')
+
+@app.route('/demanda')
+def demanda():
+    return render_template('demanda.html')
+
+@app.route('/api/demanda/salvar', methods=['POST'])
+def salvar_demanda():
+    dados = request.get_json()
+    dados['id'] = datetime.now().strftime('%Y%m%d%H%M%S')
+    dados['created_at'] = datetime.now().isoformat()
+    lista = _load(DEM_FILE)
+    lista.append(dados)
+    _save(DEM_FILE, lista)
+    return jsonify({'success': True, 'id': dados['id']})
+
 # ── Módulo 4 ──────────────────────────────────────────────
 URB_FILE = os.path.join(os.path.dirname(__file__), 'data', 'urbanisticas.json')
 
