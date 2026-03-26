@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Módulo 6 — Financiabilidade e Crédito</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-icon">🏗</span>
+    <span class="brand-name">IncorpSuite</span>
+    <span class="brand-module">/ Módulo 6 — Financiabilidade e Crédito</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="novaAnalise()">+ Nova Análise</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-label">Módulos</p>
+      <a href="/" class="sidebar-item"><span class="sidebar-dot"></span> Análise do Terreno</a>
+      <a href="/produto" class="sidebar-item"><span class="sidebar-dot" style="background:#22d3ee"></span> Estudo do Produto</a>
+      <a href="/viabilidade" class="sidebar-item"><span class="sidebar-dot" style="background:#34d399"></span> Viabilidade Financeira</a>
+      <a href="/urbanistica" class="sidebar-item"><span class="sidebar-dot" style="background:#f59e0b"></span> Análise Urbanística</a>
+      <a href="/demanda" class="sidebar-item"><span class="sidebar-dot" style="background:#e879f9"></span> Demanda Regional</a>
+      <a href="/credito" class="sidebar-item active"><span class="sidebar-dot" style="background:#38bdf8"></span> Financiabilidade e Crédito</a>
+      <a href="#" class="sidebar-item disabled">Simulação de VGV</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <h1 class="page-title">Financiabilidade e Crédito</h1>
+      <p class="page-sub">Simule o financiamento do produto e avalie a acessibilidade ao crédito.</p>
+    </div>
+
+    <!-- BANNER REFS -->
+    <div class="ref-banner" id="ref-banner" style="display:none">
+      <span class="ref-icon">📋</span>
+      <span class="ref-text">
+        Produto: <strong id="ref-produto">—</strong>
+        &nbsp;|&nbsp; VGV: <strong id="ref-vgv">—</strong>
+        &nbsp;|&nbsp; Unidades: <strong id="ref-unidades">—</strong>
+        &nbsp;|&nbsp; Renda regional (M5): <strong id="ref-renda">—</strong>
+      </span>
+    </div>
+
+    <form id="form" onsubmit="return false;">
+
+      <!-- CALCULADORA INTERATIVA -->
+      <div class="card card-calc">
+        <div class="card-header">
+          <span class="card-icon">🧮</span>
+          <h2 class="card-title">Calculadora de Financiamento</h2>
+        </div>
+
+        <div class="calc-layout">
+          <!-- Inputs -->
+          <div class="calc-inputs">
+            <div class="field">
+              <label>Taxa de Juros (% ao ano)</label>
+              <input type="number" id="taxa_aa" placeholder="Ex: 10.5" min="0" step="0.1" oninput="calcular()"/>
+            </div>
+            <div class="field">
+              <label>Prazo do Financiamento</label>
+              <select id="prazo_anos" onchange="calcular()">
+                <option value="">Selecione...</option>
+                <option value="10">10 anos</option>
+                <option value="15">15 anos</option>
+                <option value="20">20 anos</option>
+                <option value="25">25 anos</option>
+                <option value="30">30 anos</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Entrada Exigida (%)</label>
+              <input type="number" id="entrada_pct" placeholder="Ex: 20" min="0" max="100" step="1" oninput="calcular()"/>
+            </div>
+            <div class="field">
+              <label>Múltiplo de Renda Exigido pelo Banco
+                <span class="tooltip-wrap">
+                  <span class="tooltip-icon">?</span>
+                  <span class="tooltip-box">Padrão bancário: renda mínima = parcela × 3. Alguns bancos aceitam até 2.5x ou exigem 4x para determinados perfis.</span>
+                </span>
+              </label>
+              <input type="number" id="multiplo" value="3" min="1" max="6" step="0.5" oninput="calcular()"/>
+            </div>
+          </div>
+
+          <!-- Display parcela -->
+          <div class="calc-display">
+            <div class="calc-display-inner">
+              <p class="calc-display-label">Valor por Unidade</p>
+              <p class="calc-display-val" id="disp-valor-un">—</p>
+              <div class="calc-display-divider"></div>
+              <p class="calc-display-label">Valor Financiado</p>
+              <p class="calc-display-val calc-display-fin" id="disp-financiado">—</p>
+              <div class="calc-display-divider"></div>
+              <p class="calc-display-label">Parcela Mensal (Price)</p>
+              <p class="calc-display-parcela" id="disp-parcela">—</p>
+              <p class="calc-display-label" style="margin-top:6px">Renda Mínima Necessária</p>
+              <p class="calc-display-renda" id="disp-renda-min">—</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comprometimento de renda -->
+        <div class="comprometimento-row" id="comprometimento-row" style="display:none">
+          <div class="comp-label">Comprometimento de Renda Regional</div>
+          <div class="comp-bar-wrap">
+            <div class="comp-bar-fill" id="comp-bar"></div>
+            <div class="comp-bar-limit" title="Limite saudável 30%"></div>
+          </div>
+          <div class="comp-pct" id="comp-pct">—</div>
+        </div>
+      </div>
+
+      <!-- ENQUADRAMENTO SFH / SFI / FGTS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🏦</span>
+          <h2 class="card-title">Enquadramento do Produto</h2>
+        </div>
+        <div class="badges-enquadramento" id="badges-enquadramento">
+          <div class="enq-badge" id="badge-sfh">
+            <span class="enq-badge-icon">🏠</span>
+            <span class="enq-badge-label">SFH</span>
+            <span class="enq-badge-status" id="sfh-status">—</span>
+            <span class="enq-badge-desc">Valor até R$1.500.000</span>
+          </div>
+          <div class="enq-badge" id="badge-sfi">
+            <span class="enq-badge-icon">🏢</span>
+            <span class="enq-badge-label">SFI</span>
+            <span class="enq-badge-status" id="sfi-status">—</span>
+            <span class="enq-badge-desc">Acima de R$1.500.000</span>
+          </div>
+          <div class="enq-badge" id="badge-fgts">
+            <span class="enq-badge-icon">📋</span>
+            <span class="enq-badge-label">FGTS</span>
+            <span class="enq-badge-status" id="fgts-status">—</span>
+            <span class="enq-badge-desc">Elegível até R$500.000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABELA DE 5 CENÁRIOS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h2 class="card-title">Simulação de Cenários de Entrada</h2>
+        </div>
+        <div class="cenarios-table-wrap">
+          <table class="cenarios-table" id="cenarios-table">
+            <thead>
+              <tr>
+                <th>Entrada</th>
+                <th>Valor Entrada</th>
+                <th>Valor Financiado</th>
+                <th>Parcela Mensal</th>
+                <th>Renda Necessária</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="cenarios-body">
+              <tr><td colspan="6" class="cenarios-empty">Preencha os dados acima para ver os cenários</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GAUGE + SCORE -->
+      <div class="card card-results">
+        <div class="card-header">
+          <span class="card-icon">🎯</span>
+          <h2 class="card-title">Score de Financiabilidade</h2>
+        </div>
+        <div class="gauges-row">
+          <div class="gauge-wrap gauge-geral">
+            <canvas id="gauge-financ" width="200" height="120"></canvas>
+            <p class="gauge-label">Financiabilidade</p>
+            <p class="gauge-val gauge-geral-val" id="score-financ-val">—</p>
+          </div>
+          <div class="financ-breakdown">
+            <div class="financ-item" id="fi-comprometimento">
+              <span class="financ-item-label">Comprometimento de renda</span>
+              <span class="financ-item-val" id="fi-comp-val">—</span>
+            </div>
+            <div class="financ-item" id="fi-sfh">
+              <span class="financ-item-label">Enquadramento SFH</span>
+              <span class="financ-item-val" id="fi-sfh-val">—</span>
+            </div>
+            <div class="financ-item" id="fi-fgts">
+              <span class="financ-item-label">Elegibilidade FGTS</span>
+              <span class="financ-item-val" id="fi-fgts-val">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="score-badges" id="score-badges"></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="novaAnalise()">Limpar</button>
+        <button type="button" class="btn btn-primary" onclick="salvar()">
+          <span>💾</span> Salvar Análise
+        </button>
+      </div>
+
+    </form>
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+
+<script>
+let _vgv = 0, _unidades = 0, _rendaRegional = 0, _nomeProduto = '';
+
+async function carregarRefs() {
+  try {
+    const [r2, r5] = await Promise.all([
+      fetch('/api/produto/lista'),
+      fetch('/api/demanda/lista').catch(() => ({json:()=>[]}))
+    ]);
+    const l2 = await r2.json();
+    const l5 = r5.json ? await r5.json() : [];
+    const m2 = l2.length ? l2[l2.length-1] : {};
+    const m5 = l5.length ? l5[l5.length-1] : {};
+    _vgv          = m2.vgv_estimado   || 0;
+    _unidades     = m2.total_unidades || 0;
+    _nomeProduto  = m2.nome_produto   || '';
+    _rendaRegional= m5.renda          || 0;
+    if (_vgv || _nomeProduto) {
+      document.getElementById('ref-banner').style.display = 'flex';
+      s('ref-produto',  _nomeProduto || '—');
+      s('ref-vgv',      _vgv > 0 ? fmtBRL(_vgv) : '—');
+      s('ref-unidades', _unidades  || '—');
+      s('ref-renda',    _rendaRegional > 0 ? fmtBRL(_rendaRegional) : 'não informada');
+    }
+    calcular();
+  } catch(e) {}
+}
+carregarRefs();
+
+// API para demanda (pode não existir ainda)
+fetch('/api/demanda/lista').catch(()=>{});
+
+const fmtBRL = n => 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0});
+const fmtBRL2= n => 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const g      = id => parseFloat(document.getElementById(id).value) || 0;
+const s      = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+
+// ── PMT (Tabela Price) ───────────────────────────────────
+function pmt(pv, taxaAa, anos) {
+  if (!pv || !taxaAa || !anos) return 0;
+  const i = (taxaAa / 100) / 12;
+  const n = anos * 12;
+  if (i === 0) return pv / n;
+  return pv * (i * Math.pow(1+i, n)) / (Math.pow(1+i, n) - 1);
+}
+
+function calcular() {
+  const taxaAa  = g('taxa_aa');
+  const anos    = g('prazo_anos');
+  const entPct  = g('entrada_pct') / 100;
+  const mult    = g('multiplo') || 3;
+  const valorUn = _unidades > 0 ? _vgv / _unidades : 0;
+  const financ  = valorUn * (1 - entPct);
+  const parcela = pmt(financ, taxaAa, anos);
+  const rendaMin= parcela * mult;
+  const compPct = (_rendaRegional > 0 && parcela > 0)
+    ? (parcela / _rendaRegional) * 100 : 0;
+
+  // Display calculadora
+  s('disp-valor-un',   valorUn  > 0 ? fmtBRL(valorUn)  : '—');
+  s('disp-financiado', financ   > 0 ? fmtBRL(financ)   : '—');
+  s('disp-parcela',    parcela  > 0 ? fmtBRL2(parcela)  : '—');
+  s('disp-renda-min',  rendaMin > 0 ? fmtBRL(rendaMin) : '—');
+
+  // Barra comprometimento
+  if (compPct > 0) {
+    document.getElementById('comprometimento-row').style.display = 'flex';
+    const bar = document.getElementById('comp-bar');
+    bar.style.width = Math.min(compPct, 100).toFixed(1) + '%';
+    bar.style.background = compPct < 25 ? '#4ade80' : compPct < 30 ? '#a3e635'
+      : compPct < 35 ? '#facc15' : compPct < 40 ? '#fb923c' : '#f87171';
+    s('comp-pct', compPct.toFixed(1) + '%');
+  } else {
+    document.getElementById('comprometimento-row').style.display = 'none';
+  }
+
+  // Enquadramento
+  const isSFH  = valorUn > 0 && valorUn <= 1500000;
+  const isSFI  = valorUn > 1500000;
+  const isFGTS = valorUn > 0 && valorUn <= 500000;
+  atualizarBadge('badge-sfh',  'sfh-status',  isSFH,  valorUn > 0);
+  atualizarBadge('badge-sfi',  'sfi-status',  isSFI,  valorUn > 0);
+  atualizarBadge('badge-fgts', 'fgts-status', isFGTS, valorUn > 0);
+  s('fi-sfh-val',  valorUn > 0 ? (isSFH  ? '✅ Sim' : '❌ Não') : '—');
+  s('fi-fgts-val', valorUn > 0 ? (isFGTS ? '✅ Sim' : '❌ Não') : '—');
+
+  // Score financiabilidade
+  const scoreFin = compPct === 0 ? 0
+    : compPct < 25 ? 100 : compPct < 30 ? 80
+    : compPct < 35 ? 60  : compPct < 40 ? 40 : 20;
+  drawGauge('gauge-financ', scoreFin, 200, 120, 76);
+  s('score-financ-val', scoreFin > 0 ? scoreFin : (valorUn > 0 && parcela > 0 ? scoreFin : '—'));
+  s('fi-comp-val', compPct > 0 ? compPct.toFixed(1) + '%' : '—');
+  renderBadge(scoreFin, compPct);
+
+  // Tabela de cenários
+  if (valorUn > 0 && taxaAa > 0 && anos > 0) {
+    renderCenarios(valorUn, taxaAa, anos, mult);
+  }
+
+  return { taxaAa, anos, entPct, mult, valorUn, financ, parcela, rendaMin, compPct,
+           scoreFin, isSFH, isSFI, isFGTS };
+}
+
+function atualizarBadge(cardId, statusId, ativo, calculado) {
+  const card = document.getElementById(cardId);
+  card.className = 'enq-badge ' + (!calculado ? '' : ativo ? 'enq-ativo' : 'enq-inativo');
+  s(statusId, !calculado ? '—' : ativo ? 'Enquadrado' : 'Não enquadrado');
+}
+
+// ── Tabela cenários ──────────────────────────────────────
+function renderCenarios(valorUn, taxaAa, anos, mult) {
+  const entradas = [0.10, 0.20, 0.30, 0.40, 0.50];
+  const rows = entradas.map(ep => {
+    const vf       = valorUn * (1 - ep);
+    const parc     = pmt(vf, taxaAa, anos);
+    const rendaNec = parc * mult;
+    const viavel   = _rendaRegional > 0
+      ? (parc / _rendaRegional) * 100 <= 35
+      : null;
+    return { ep, vf, parc, rendaNec, viavel };
+  });
+
+  document.getElementById('cenarios-body').innerHTML = rows.map(r => `
+    <tr class="${r.viavel === true ? 'cen-viavel' : r.viavel === false ? 'cen-inviavel' : ''}">
+      <td><strong>${(r.ep*100).toFixed(0)}%</strong></td>
+      <td>${fmtBRL(valorUn * r.ep)}</td>
+      <td>${fmtBRL(r.vf)}</td>
+      <td>${fmtBRL2(r.parc)}</td>
+      <td>${fmtBRL(r.rendaNec)}</td>
+      <td>${r.viavel === true ? '<span class="cen-badge ok">✅ Viável</span>'
+          : r.viavel === false ? '<span class="cen-badge no">❌ Inviável</span>'
+          : '<span class="cen-badge nd">— N/D</span>'}</td>
+    </tr>`).join('');
+}
+
+// ── Gauge (igual M4/M5) ──────────────────────────────────
+function drawGauge(id, value, w, h, radius) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+  const cx = w/2, cy = h-12;
+  ctx.beginPath(); ctx.arc(cx,cy,radius,Math.PI,2*Math.PI);
+  ctx.lineWidth=14; ctx.strokeStyle='#334155'; ctx.stroke();
+  const pct = Math.min(Math.max(value,0),100)/100;
+  const cor = value>=70?'#4ade80':value>=40?'#facc15':'#f87171';
+  ctx.beginPath(); ctx.arc(cx,cy,radius,Math.PI,Math.PI+pct*Math.PI);
+  ctx.lineWidth=14; ctx.strokeStyle=cor; ctx.lineCap='round'; ctx.stroke();
+  [0,50,100].forEach(m=>{
+    const a=Math.PI+(m/100)*Math.PI;
+    ctx.fillStyle='#475569'; ctx.font='9px system-ui'; ctx.textAlign='center';
+    ctx.fillText(m, cx+Math.cos(a)*(radius+10), cy+Math.sin(a)*(radius+10));
+  });
+}
+
+function renderBadge(score, comp) {
+  if (!score && comp === 0) { document.getElementById('score-badges').innerHTML=''; return; }
+  const [txt,cls] = score>=80?['Produto bem financiável — parcela acessível para a renda regional','badge-green']
+    :score>=60?['Financiabilidade moderada — comprometimento próximo do limite','badge-yellow']
+    :['Comprometimento elevado — produto pode ter dificuldade de absorção','badge-red'];
+  document.getElementById('score-badges').innerHTML=`<span class="score-badge ${cls}">${txt}</span>`;
+}
+
+function novaAnalise() {
+  document.getElementById('form').reset();
+  document.getElementById('multiplo').value='3';
+  ['disp-valor-un','disp-financiado','disp-parcela','disp-renda-min',
+   'comp-pct','sfh-status','sfi-status','fgts-status',
+   'score-financ-val','fi-comp-val','fi-sfh-val','fi-fgts-val'].forEach(id=>s(id,'—'));
+  document.getElementById('comprometimento-row').style.display='none';
+  ['badge-sfh','badge-sfi','badge-fgts'].forEach(id=>{
+    document.getElementById(id).className='enq-badge';
+  });
+  document.getElementById('cenarios-body').innerHTML=
+    '<tr><td colspan="6" class="cenarios-empty">Preencha os dados acima para ver os cenários</td></tr>';
+  document.getElementById('score-badges').innerHTML='';
+  const c=document.getElementById('gauge-financ');
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.className='toast show '+type; setTimeout(()=>t.className='toast',3000);
+}
+
+async function salvar() {
+  const d = calcular();
+  if (!d.valorUn) { showToast('Dados do Módulo 2 não encontrados.','error'); return; }
+  if (!d.taxaAa || !d.anos) { showToast('Informe taxa de juros e prazo.','error'); return; }
+  const payload = {
+    taxa_aa: d.taxaAa, prazo_anos: d.anos,
+    entrada_pct: d.entPct*100, multiplo: d.mult,
+    valor_unidade: d.valorUn, valor_financiado: d.financ,
+    parcela: d.parcela, renda_min: d.rendaMin,
+    comprometimento: d.compPct, score_financ: d.scoreFin,
+    is_sfh: d.isSFH, is_sfi: d.isSFI, is_fgts: d.isFGTS,
+    vgv_ref: _vgv, unidades_ref: _unidades, renda_regional: _rendaRegional,
+  };
+  const res = await fetch('/api/credito/salvar',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const data = await res.json();
+  if (data.success) showToast('✅ Análise de crédito salva!');
+  else showToast('Erro ao salvar.','error');
+}
+</script>
+
+</body>
+</html>

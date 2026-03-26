@@ -1,0 +1,22 @@
+[
+  {
+    "cidade": "São Luís",
+    "raio": "5",
+    "renda": 6000,
+    "populacao": 35000,
+    "lancamentos": 32,
+    "velocidade": 24,
+    "demanda": 1050,
+    "oferta": 16,
+    "deficit": 1034,
+    "saturacao": 30.476190476190478,
+    "ticket_max": 432000,
+    "score_demanda": 100,
+    "score_renda": 94,
+    "score_atrat": 98,
+    "vgv_ref": 26334000,
+    "unidades_ref": 57,
+    "id": "20260326180730",
+    "created_at": "2026-03-26T18:07:30.465039"
+  }
+]

@@ -613,3 +613,171 @@ body {
 .dvo-note     { font-size: 11px; color: #475569; }
 .dvo-highlight { background: rgba(99,102,241,.06); }
 .dvo-highlight .dvo-label { color: #c7d2fe; font-weight: 600; }
+
+/* ── MÓDULO 6 ────────────────────────────────────────── */
+
+/* CARD CALCULADORA */
+.card-calc { border-color: #38bdf8; }
+
+.calc-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 800px) { .calc-layout { grid-template-columns: 1fr; } }
+
+.calc-inputs { display: flex; flex-direction: column; gap: 14px; }
+
+.calc-display {
+  background: #0f172a;
+  border: 1px solid #0ea5e9;
+  border-radius: 14px;
+  padding: 4px;
+}
+.calc-display-inner {
+  background: #020617;
+  border-radius: 11px;
+  padding: 24px 20px;
+  text-align: center;
+}
+.calc-display-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #475569;
+  margin-bottom: 4px;
+}
+.calc-display-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+.calc-display-fin  { color: #38bdf8; }
+.calc-display-parcela {
+  font-size: 34px;
+  font-weight: 900;
+  color: #7dd3fc;
+  letter-spacing: -.01em;
+  margin-bottom: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.calc-display-renda {
+  font-size: 16px;
+  font-weight: 700;
+  color: #38bdf8;
+}
+.calc-display-divider {
+  height: 1px;
+  background: #1e293b;
+  margin: 12px 0;
+}
+
+/* BARRA COMPROMETIMENTO */
+.comprometimento-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #1e293b;
+}
+.comp-label    { font-size: 12px; font-weight: 600; color: #64748b; white-space: nowrap; }
+.comp-bar-wrap { flex: 1; height: 8px; background: #1e293b; border-radius: 4px; position: relative; overflow: visible; }
+.comp-bar-fill { height: 100%; border-radius: 4px; transition: width .5s ease, background .3s; }
+.comp-bar-limit {
+  position: absolute;
+  top: -4px; left: 30%;
+  width: 2px; height: 16px;
+  background: #f87171;
+  border-radius: 1px;
+}
+.comp-pct { font-size: 14px; font-weight: 700; color: #e2e8f0; min-width: 48px; text-align: right; }
+
+/* BADGES ENQUADRAMENTO */
+.badges-enquadramento {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 700px) { .badges-enquadramento { grid-template-columns: 1fr; } }
+
+.enq-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: border-color .3s, background .3s;
+}
+.enq-badge-icon   { font-size: 24px; }
+.enq-badge-label  { font-size: 16px; font-weight: 800; color: #64748b; }
+.enq-badge-status { font-size: 12px; font-weight: 600; color: #475569; }
+.enq-badge-desc   { font-size: 11px; color: #334155; }
+
+.enq-ativo  { border-color: #4ade80; background: rgba(74,222,128,.06); }
+.enq-ativo  .enq-badge-label  { color: #4ade80; }
+.enq-ativo  .enq-badge-status { color: #86efac; }
+
+.enq-inativo { border-color: #475569; }
+.enq-inativo .enq-badge-label  { color: #475569; }
+.enq-inativo .enq-badge-status { color: #334155; }
+
+/* TABELA CENÁRIOS */
+.cenarios-table-wrap { overflow-x: auto; }
+.cenarios-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.cenarios-table th {
+  background: #1e293b;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  padding: 10px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+.cenarios-table td {
+  padding: 11px 14px;
+  color: #94a3b8;
+  border-bottom: 1px solid #1e293b;
+}
+.cenarios-table td strong { color: #e2e8f0; }
+.cenarios-table tr:last-child td { border-bottom: none; }
+.cen-viavel   td { background: rgba(74,222,128,.04); }
+.cen-inviavel td { background: rgba(248,113,113,.04); }
+.cen-badge    { padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+.cen-badge.ok { background: rgba(74,222,128,.15);  color: #4ade80; }
+.cen-badge.no { background: rgba(248,113,113,.15); color: #f87171; }
+.cen-badge.nd { background: rgba(100,116,139,.15); color: #94a3b8; }
+.cenarios-empty { text-align: center; color: #475569; padding: 24px; font-size: 13px; }
+
+/* FINANCIABILIDADE BREAKDOWN */
+.financ-breakdown {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 24px;
+}
+.financ-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+}
+.financ-item-label { font-size: 13px; color: #64748b; }
+.financ-item-val   { font-size: 13px; font-weight: 700; color: #e2e8f0; }

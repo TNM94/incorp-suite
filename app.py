@@ -37,6 +37,23 @@ def salvar():
 def listar():
     return jsonify(_load(DATA_FILE))
 
+# ── Módulo 6 ──────────────────────────────────────────────
+CRED_FILE = os.path.join(os.path.dirname(__file__), 'data', 'creditos.json')
+
+@app.route('/credito')
+def credito():
+    return render_template('credito.html')
+
+@app.route('/api/credito/salvar', methods=['POST'])
+def salvar_credito():
+    dados = request.get_json()
+    dados['id'] = datetime.now().strftime('%Y%m%d%H%M%S')
+    dados['created_at'] = datetime.now().isoformat()
+    lista = _load(CRED_FILE)
+    lista.append(dados)
+    _save(CRED_FILE, lista)
+    return jsonify({'success': True, 'id': dados['id']})
+
 # ── Módulo 5 ──────────────────────────────────────────────
 DEM_FILE = os.path.join(os.path.dirname(__file__), 'data', 'demandas.json')
 
@@ -53,6 +70,10 @@ def salvar_demanda():
     lista.append(dados)
     _save(DEM_FILE, lista)
     return jsonify({'success': True, 'id': dados['id']})
+
+@app.route('/api/demanda/lista', methods=['GET'])
+def listar_demandas():
+    return jsonify(_load(DEM_FILE))
 
 # ── Módulo 4 ──────────────────────────────────────────────
 URB_FILE = os.path.join(os.path.dirname(__file__), 'data', 'urbanisticas.json')
