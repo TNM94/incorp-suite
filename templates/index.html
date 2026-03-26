@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Módulo 1 — Análise do Terreno</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-icon">🏗</span>
+    <span class="brand-name">IncorpSuite</span>
+    <span class="brand-module">/ Módulo 1 — Análise do Terreno</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="novaAnalise()">+ Nova Análise</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-label">Módulos</p>
+      <a href="#" class="sidebar-item active">
+        <span class="sidebar-dot"></span> Análise do Terreno
+      </a>
+      <a href="#" class="sidebar-item disabled">Viabilidade Financeira</a>
+      <a href="#" class="sidebar-item disabled">Programa de Necessidades</a>
+      <a href="#" class="sidebar-item disabled">Simulação de VGV</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="page-header">
+      <h1 class="page-title">Análise do Terreno</h1>
+      <p class="page-sub">Preencha os dados do terreno para calcular os índices urbanísticos.</p>
+    </div>
+
+    <form id="form" onsubmit="return false;">
+
+      <!-- SEÇÃO 1: IDENTIFICAÇÃO -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📍</span>
+          <h2 class="card-title">Identificação</h2>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Nome / Código do Terreno</label>
+            <input type="text" id="nome" placeholder="Ex: Terreno Centro – LT-001"/>
+          </div>
+          <div class="field">
+            <label>Endereço Completo</label>
+            <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 2: DADOS FÍSICOS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📐</span>
+          <h2 class="card-title">Dados Físicos</h2>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Área Total (m²)</label>
+            <input type="number" id="area_total" placeholder="0,00" min="0" step="0.01" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>Testada Mínima (m)</label>
+            <input type="number" id="testada" placeholder="0,00" min="0" step="0.01"/>
+          </div>
+          <div class="field">
+            <label>Topografia</label>
+            <select id="topografia">
+              <option value="">Selecione...</option>
+              <option>Plano</option>
+              <option>Leve declive</option>
+              <option>Acentuado declive</option>
+              <option>Acidentado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 3: PARÂMETROS URBANÍSTICOS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🏛</span>
+          <h2 class="card-title">Parâmetros Urbanísticos</h2>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Zona de Uso</label>
+            <select id="zona">
+              <option value="">Selecione...</option>
+              <option>Residencial</option>
+              <option>Comercial</option>
+              <option>Misto</option>
+              <option>Industrial</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Zoneamento Permitido</label>
+            <input type="text" id="zoneamento" placeholder="Ex: ZR4, ZM, ZC"/>
+          </div>
+          <div class="field">
+            <label>
+              Coeficiente de Aproveitamento
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">?</span>
+                <span class="tooltip-box">Multiplicador da área do terreno para calcular a área construída máxima. Ex: CA 2.5 em terreno de 500 m² permite até 1.250 m² construídos. Valor entre 0.1 e 6.0.</span>
+              </span>
+            </label>
+            <input type="number" id="ca" placeholder="Ex: 2.5" min="0.1" max="6.0" step="0.01" oninput="validarCA()" />
+            <span class="field-hint" id="ca-hint"></span>
+          </div>
+          <div class="field">
+            <label>Taxa de Ocupação Máxima (%)</label>
+            <input type="number" id="to" placeholder="0" min="0" max="100" step="1" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>Gabarito Máximo (pavimentos)</label>
+            <input type="number" id="gabarito" placeholder="0" min="0" step="1"/>
+          </div>
+        </div>
+
+        <div class="permissions-row">
+          <div class="permission-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="perm_residencial" class="toggle-input"/>
+              <span class="toggle-track"></span>
+              <span class="toggle-text">Permissão Residencial</span>
+            </label>
+          </div>
+          <div class="permission-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="perm_comercial" class="toggle-input"/>
+              <span class="toggle-track"></span>
+              <span class="toggle-text">Permissão Comercial</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 4: RESULTADOS CALCULADOS -->
+      <div class="card card-results">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h2 class="card-title">Resultados Calculados</h2>
+        </div>
+        <div class="results-grid">
+          <div class="result-card">
+            <p class="result-label">Área Aproveitável</p>
+            <p class="result-value" id="res_aproveitavel">—</p>
+            <p class="result-formula">Área Total × 80%</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Área Construída Máxima</p>
+            <p class="result-value" id="res_construida">—</p>
+            <p class="result-formula">Área Total × CA</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Área de Implantação Máxima</p>
+            <p class="result-value" id="res_implantacao">—</p>
+            <p class="result-formula">Área Total × TO%</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- AÇÕES -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="novaAnalise()">Limpar</button>
+        <button type="button" class="btn btn-primary" onclick="salvar()">
+          <span>💾</span> Salvar Análise
+        </button>
+      </div>
+
+    </form>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+  </main>
+</div>
+
+<script>
+function fmt(n) {
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' m²';
+}
+
+function validarCA() {
+  const input = document.getElementById('ca');
+  const hint  = document.getElementById('ca-hint');
+  const val   = parseFloat(input.value);
+  if (input.value !== '' && (isNaN(val) || val < 0.1 || val > 6.0)) {
+    input.classList.add('input-error');
+    hint.textContent = 'CA deve ser entre 0.1 e 6.0';
+    hint.className = 'field-hint hint-error';
+  } else {
+    input.classList.remove('input-error');
+    hint.textContent = input.value ? 'Valor válido' : '';
+    hint.className = input.value ? 'field-hint hint-ok' : 'field-hint';
+  }
+  calcular();
+}
+
+function calcular() {
+  const area = parseFloat(document.getElementById('area_total').value) || 0;
+  const caRaw = parseFloat(document.getElementById('ca').value) || 0;
+  const ca    = (caRaw >= 0.1 && caRaw <= 6.0) ? caRaw : 0;
+  const to   = parseFloat(document.getElementById('to').value) || 0;
+
+  document.getElementById('res_aproveitavel').textContent  = area > 0 ? fmt(area * 0.80) : '—';
+  document.getElementById('res_construida').textContent    = (area > 0 && ca > 0) ? fmt(area * ca) : '—';
+  document.getElementById('res_implantacao').textContent   = (area > 0 && to > 0) ? fmt(area * (to / 100)) : '—';
+}
+
+function novaAnalise() {
+  document.getElementById('form').reset();
+  document.getElementById('res_aproveitavel').textContent  = '—';
+  document.getElementById('res_construida').textContent    = '—';
+  document.getElementById('res_implantacao').textContent   = '—';
+  document.getElementById('ca').classList.remove('input-error');
+  document.getElementById('ca-hint').textContent = '';
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+async function salvar() {
+  const area  = parseFloat(document.getElementById('area_total').value) || 0;
+  const caRaw = parseFloat(document.getElementById('ca').value) || 0;
+  const to    = parseFloat(document.getElementById('to').value) || 0;
+  if (caRaw && (caRaw < 0.1 || caRaw > 6.0)) {
+    showToast('CA inválido. Use um valor entre 0.1 e 6.0.', 'error'); return;
+  }
+  const ca = caRaw;
+
+  const payload = {
+    nome:              document.getElementById('nome').value,
+    endereco:          document.getElementById('endereco').value,
+    area_total:        area,
+    testada:           parseFloat(document.getElementById('testada').value) || 0,
+    topografia:        document.getElementById('topografia').value,
+    zona:              document.getElementById('zona').value,
+    zoneamento:        document.getElementById('zoneamento').value,
+    coeficiente_ap:    ca,
+    taxa_ocupacao:     to,
+    gabarito:          parseInt(document.getElementById('gabarito').value) || 0,
+    perm_residencial:  document.getElementById('perm_residencial').checked,
+    perm_comercial:    document.getElementById('perm_comercial').checked,
+    area_aproveitavel: area * 0.80,
+    area_construida:   area * ca,
+    area_implantacao:  area * (to / 100),
+  };
+
+  if (!payload.nome) { showToast('Informe o nome do terreno.', 'error'); return; }
+  if (!payload.area_total) { showToast('Informe a área total.', 'error'); return; }
+
+  const res = await fetch('/api/salvar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (data.success) showToast('✅ Análise salva com sucesso!');
+  else showToast('Erro ao salvar.', 'error');
+}
+</script>
+
+</body>
+</html>

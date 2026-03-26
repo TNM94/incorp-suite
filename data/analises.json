@@ -1,0 +1,21 @@
+[
+  {
+    "nome": "TERRENO X",
+    "endereco": "RUA DAS PATATIVAS, 10, SÃO LUÍS, MARANHÃO",
+    "area_total": 25000,
+    "testada": 8,
+    "topografia": "Leve declive",
+    "zona": "Residencial",
+    "zoneamento": "ZR1",
+    "coeficiente_ap": 50,
+    "taxa_ocupacao": 60,
+    "gabarito": 2,
+    "perm_residencial": true,
+    "perm_comercial": false,
+    "area_aproveitavel": 20000,
+    "area_construida": 1250000,
+    "area_implantacao": 15000,
+    "id": "20260326173035",
+    "created_at": "2026-03-26T17:30:35.073755"
+  }
+]
