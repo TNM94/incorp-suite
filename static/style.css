@@ -308,3 +308,77 @@ body {
 }
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.error { background: #ef4444; }
+
+/* ── MÓDULO 3 ────────────────────────────────────────── */
+
+/* results grid 4 cols */
+.results-grid-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 900px) { .results-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .results-grid-4 { grid-template-columns: 1fr; } }
+
+.result-ind .result-value { font-size: 20px; }
+
+/* section label inside card */
+.results-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+/* SEMÁFORO */
+.semaforo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 20px 28px;
+  margin-bottom: 28px;
+}
+.semaforo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 14px;
+  padding: 10px 12px;
+  flex-shrink: 0;
+}
+.semaforo-luz {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 2px solid #334155;
+  transition: background .3s, box-shadow .3s;
+}
+.semaforo-luz.on-red    { background: #ef4444; box-shadow: 0 0 12px #ef4444; border-color: #ef4444; }
+.semaforo-luz.on-yellow { background: #facc15; box-shadow: 0 0 12px #facc15; border-color: #facc15; }
+.semaforo-luz.on-green  { background: #4ade80; box-shadow: 0 0 12px #4ade80; border-color: #4ade80; }
+
+.semaforo-status {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  color: #64748b;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.semaforo-desc { font-size: 13px; color: #64748b; }
+
+/* PIZZA */
+.pizza-wrap {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-top: 8px;
+}
+.pizza-legend { display: flex; flex-direction: column; gap: 10px; }
+.legend-item  { display: flex; align-items: center; gap: 10px; }
+.legend-dot   { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.legend-label { font-size: 13px; color: #94a3b8; flex: 1; }
+.legend-pct   { font-size: 13px; font-weight: 700; color: #e2e8f0; min-width: 46px; text-align: right; }

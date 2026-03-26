@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Módulo 3 — Viabilidade Financeira</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-icon">🏗</span>
+    <span class="brand-name">IncorpSuite</span>
+    <span class="brand-module">/ Módulo 3 — Viabilidade Financeira</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="novaAnalise()">+ Nova Análise</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-label">Módulos</p>
+      <a href="/" class="sidebar-item">
+        <span class="sidebar-dot"></span> Análise do Terreno
+      </a>
+      <a href="/produto" class="sidebar-item">
+        <span class="sidebar-dot" style="background:#22d3ee"></span> Estudo do Produto
+      </a>
+      <a href="/viabilidade" class="sidebar-item active">
+        <span class="sidebar-dot" style="background:#34d399"></span> Viabilidade Financeira
+      </a>
+      <a href="#" class="sidebar-item disabled">Simulação de VGV</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <h1 class="page-title">Viabilidade Financeira</h1>
+      <p class="page-sub">Analise custos, receitas e margem do empreendimento.</p>
+    </div>
+
+    <!-- BANNER REFERÊNCIA M2 -->
+    <div class="ref-banner" id="ref-banner" style="display:none">
+      <span class="ref-icon">📋</span>
+      <span class="ref-text">
+        Referência do Módulo 2: <strong id="ref-nome">—</strong>
+        &nbsp;|&nbsp; Área construída: <strong id="ref-area">—</strong> m²
+        &nbsp;|&nbsp; VGV: <strong id="ref-vgv">—</strong>
+      </span>
+    </div>
+
+    <form id="form" onsubmit="return false;">
+
+      <!-- CUSTOS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">💰</span>
+          <h2 class="card-title">Custos</h2>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Custo do Terreno (R$)</label>
+            <input type="number" id="custo_terreno" placeholder="Ex: 2000000" min="0" step="1000" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>Custo Direto por m² — SINAPI (R$)
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">?</span>
+                <span class="tooltip-box">Custo de construção por m² conforme tabela SINAPI. Multiplicado pela área construída total do Módulo 2.</span>
+              </span>
+            </label>
+            <input type="number" id="custo_m2" placeholder="Ex: 2800" min="0" step="50" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>Custo Indireto (%)</label>
+            <input type="number" id="pct_indireto" value="20" min="0" max="100" step="0.1" oninput="calcular()"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARÂMETROS COMERCIAIS E FISCAIS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📑</span>
+          <h2 class="card-title">Despesas Comerciais e Fiscais</h2>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Despesas Comerciais (%)</label>
+            <input type="number" id="pct_comercial" value="6" min="0" max="100" step="0.01" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>Impostos (%)
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">?</span>
+                <span class="tooltip-box">Carga tributária sobre a receita. Padrão 6.73% (RET – Regime Especial de Tributação para incorporações).</span>
+              </span>
+            </label>
+            <input type="number" id="pct_impostos" value="6.73" min="0" max="100" step="0.01" oninput="calcular()"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRAZO E VENDAS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📅</span>
+          <h2 class="card-title">Prazo e Velocidade de Vendas</h2>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Prazo de Obra (meses)</label>
+            <input type="number" id="prazo_obra" placeholder="Ex: 36" min="1" step="1" oninput="calcular()"/>
+          </div>
+          <div class="field">
+            <label>Velocidade de Vendas (unidades/mês)</label>
+            <input type="number" id="vel_vendas" placeholder="Ex: 4" min="0" step="0.5" oninput="calcular()"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEMÁFORO + RESULTADOS -->
+      <div class="card card-results" id="card-resultados">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h2 class="card-title">Resultados</h2>
+        </div>
+
+        <!-- SEMÁFORO -->
+        <div class="semaforo-wrap" id="semaforo-wrap">
+          <div class="semaforo" id="semaforo">
+            <div class="semaforo-luz" id="luz-vermelho"></div>
+            <div class="semaforo-luz" id="luz-amarelo"></div>
+            <div class="semaforo-luz" id="luz-verde"></div>
+          </div>
+          <div class="semaforo-info">
+            <p class="semaforo-status" id="semaforo-status">—</p>
+            <p class="semaforo-desc" id="semaforo-desc">Preencha os dados para ver o veredicto</p>
+          </div>
+        </div>
+
+        <!-- CUSTOS CALCULADOS -->
+        <p class="results-section-label">Estrutura de Custos</p>
+        <div class="results-grid results-grid-4">
+          <div class="result-card">
+            <p class="result-label">Custo Direto Total</p>
+            <p class="result-value" id="res_direto">—</p>
+            <p class="result-formula">m² SINAPI × Área Constr.</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Custo Indireto</p>
+            <p class="result-value" id="res_indireto">—</p>
+            <p class="result-formula">Direto × % indireto</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Custo Total da Obra</p>
+            <p class="result-value" id="res_obra">—</p>
+            <p class="result-formula">Direto + Indireto</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Custo Total Empreend.</p>
+            <p class="result-value" id="res_empreend">—</p>
+            <p class="result-formula">Terreno + Obra</p>
+          </div>
+        </div>
+
+        <!-- RECEITA E RESULTADO -->
+        <p class="results-section-label" style="margin-top:20px">Receita e Resultado</p>
+        <div class="results-grid results-grid-4">
+          <div class="result-card">
+            <p class="result-label">Desp. Comerciais</p>
+            <p class="result-value" id="res_comercial">—</p>
+            <p class="result-formula">VGV × % comercial</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Impostos</p>
+            <p class="result-value" id="res_impostos">—</p>
+            <p class="result-formula">VGV × % impostos</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Receita Líquida</p>
+            <p class="result-value" id="res_liquida">—</p>
+            <p class="result-formula">VGV − Desp. − Impostos</p>
+          </div>
+          <div class="result-card result-vgv">
+            <p class="result-label">Lucro Bruto</p>
+            <p class="result-value" id="res_lucro">—</p>
+            <p class="result-formula">Rec. Líq. − Custo Total</p>
+          </div>
+        </div>
+
+        <!-- INDICADORES -->
+        <p class="results-section-label" style="margin-top:20px">Indicadores</p>
+        <div class="results-grid results-grid-4">
+          <div class="result-card result-ind">
+            <p class="result-label">Margem s/ VGV</p>
+            <p class="result-value result-pct" id="res_margem_vgv">—</p>
+            <p class="result-formula">Lucro / VGV</p>
+          </div>
+          <div class="result-card result-ind">
+            <p class="result-label">Margem s/ Custo</p>
+            <p class="result-value result-pct" id="res_margem_custo">—</p>
+            <p class="result-formula">Lucro / Custo Total</p>
+          </div>
+          <div class="result-card result-ind">
+            <p class="result-label">ROI</p>
+            <p class="result-value result-pct" id="res_roi">—</p>
+            <p class="result-formula">Lucro / Custo Total</p>
+          </div>
+          <div class="result-card result-ind">
+            <p class="result-label">Payback Estimado</p>
+            <p class="result-value" id="res_payback">—</p>
+            <p class="result-formula">Custo / (VGV ÷ Prazo)</p>
+          </div>
+        </div>
+
+        <!-- GRÁFICO DE PIZZA -->
+        <p class="results-section-label" style="margin-top:24px">Composição do VGV</p>
+        <div class="pizza-wrap">
+          <canvas id="pizza" width="220" height="220"></canvas>
+          <div class="pizza-legend" id="pizza-legend"></div>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="novaAnalise()">Limpar</button>
+        <button type="button" class="btn btn-primary" onclick="salvar()">
+          <span>💾</span> Salvar Análise
+        </button>
+      </div>
+
+    </form>
+
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+
+<script>
+// ── Estado global ────────────────────────────────────────
+let _vgv = 0, _areaCons = 0;
+
+// ── Referência do Módulo 2 ───────────────────────────────
+async function carregarRef() {
+  try {
+    const res  = await fetch('/api/produto/lista');
+    const list = await res.json();
+    if (!list.length) return;
+    const u = list[list.length - 1];
+    _vgv      = u.vgv_estimado   || 0;
+    _areaCons = u.area_construida || 0;
+    document.getElementById('ref-banner').style.display = 'flex';
+    document.getElementById('ref-nome').textContent = u.nome_produto || '—';
+    document.getElementById('ref-area').textContent =
+      _areaCons.toLocaleString('pt-BR', {maximumFractionDigits:2});
+    document.getElementById('ref-vgv').textContent =
+      _vgv > 0 ? fmtBRL(_vgv) : '—';
+    calcular();
+  } catch(e) {}
+}
+carregarRef();
+
+// ── Helpers ──────────────────────────────────────────────
+const fmtBRL = n => 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0});
+const fmtPct = n => n.toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1}) + '%';
+const g = id  => parseFloat(document.getElementById(id).value) || 0;
+const s = (id, v) => { document.getElementById(id).textContent = v; };
+
+// ── Cálculo principal ────────────────────────────────────
+function calcular() {
+  const terreno    = g('custo_terreno');
+  const custoM2    = g('custo_m2');
+  const pctIndir   = g('pct_indireto')  / 100;
+  const pctCom     = g('pct_comercial') / 100;
+  const pctImp     = g('pct_impostos')  / 100;
+  const prazo      = g('prazo_obra');
+  const vgv        = _vgv;
+  const areaCons   = _areaCons;
+
+  const direto     = custoM2 * areaCons;
+  const indireto   = direto * pctIndir;
+  const obra       = direto + indireto;
+  const empreend   = terreno + obra;
+  const despCom    = vgv * pctCom;
+  const impostos   = vgv * pctImp;
+  const liquida    = vgv - despCom - impostos;
+  const lucro      = liquida - empreend;
+  const margemVgv  = vgv  > 0 ? (lucro / vgv)     * 100 : 0;
+  const margemCust = empreend > 0 ? (lucro / empreend) * 100 : 0;
+  const roi        = empreend > 0 ? (lucro / empreend) * 100 : 0;
+  const payback    = (prazo > 0 && vgv > 0) ? empreend / (vgv / prazo) : 0;
+
+  // Preenche cards
+  s('res_direto',    direto    > 0 ? fmtBRL(direto)    : '—');
+  s('res_indireto',  direto    > 0 ? fmtBRL(indireto)  : '—');
+  s('res_obra',      obra      > 0 ? fmtBRL(obra)      : '—');
+  s('res_empreend',  empreend  > 0 ? fmtBRL(empreend)  : '—');
+  s('res_comercial', vgv       > 0 ? fmtBRL(despCom)   : '—');
+  s('res_impostos',  vgv       > 0 ? fmtBRL(impostos)  : '—');
+  s('res_liquida',   vgv       > 0 ? fmtBRL(liquida)   : '—');
+  s('res_lucro',     empreend  > 0 && vgv > 0 ? fmtBRL(lucro) : '—');
+
+  const pctEl = document.querySelectorAll('.result-pct');
+  pctEl.forEach(el => el.style.color = '');
+
+  if (empreend > 0 && vgv > 0) {
+    const cor = margemVgv >= 20 ? '#4ade80' : margemVgv >= 10 ? '#facc15' : '#f87171';
+    s('res_margem_vgv',  fmtPct(margemVgv));
+    s('res_margem_custo',fmtPct(margemCust));
+    s('res_roi',         fmtPct(roi));
+    document.querySelectorAll('.result-pct').forEach(el => el.style.color = cor);
+  } else {
+    s('res_margem_vgv','—'); s('res_margem_custo','—'); s('res_roi','—');
+  }
+  s('res_payback', payback > 0 ? payback.toFixed(1) + ' meses' : '—');
+
+  atualizarSemaforo(margemVgv, empreend, vgv);
+  if (empreend > 0 && vgv > 0) {
+    desenharPizza(terreno, obra, despCom + impostos, Math.max(lucro, 0), vgv);
+  }
+
+  return { terreno, obra, despCom, impostos, lucro, empreend, vgv,
+           liquida, margemVgv, margemCust, roi, payback, direto, indireto };
+}
+
+// ── Semáforo ─────────────────────────────────────────────
+function atualizarSemaforo(margem, empreend, vgv) {
+  const sv     = document.getElementById('semaforo-status');
+  const sd     = document.getElementById('semaforo-desc');
+  const lv     = document.getElementById('luz-vermelho');
+  const la     = document.getElementById('luz-amarelo');
+  const lverde = document.getElementById('luz-verde');
+
+  lv.classList.remove('on-red');
+  la.classList.remove('on-yellow');
+  lverde.classList.remove('on-green');
+
+  if (!empreend || !vgv) {
+    sv.textContent = '—';
+    sd.textContent = 'Preencha os dados para ver o veredicto';
+    sv.style.color = '#64748b';
+    return;
+  }
+  if (margem >= 20) {
+    lverde.classList.add('on-green');
+    sv.textContent = 'VIÁVEL';
+    sd.textContent = `Margem de ${margem.toFixed(1)}% sobre VGV — acima do piso mínimo de 20%.`;
+    sv.style.color = '#4ade80';
+  } else if (margem >= 10) {
+    la.classList.add('on-yellow');
+    sv.textContent = 'ATENÇÃO';
+    sd.textContent = `Margem de ${margem.toFixed(1)}% sobre VGV — abaixo do ideal, revise premissas.`;
+    sv.style.color = '#facc15';
+  } else {
+    lv.classList.add('on-red');
+    sv.textContent = 'INVIÁVEL';
+    sd.textContent = `Margem de ${margem.toFixed(1)}% sobre VGV — insuficiente para viabilizar o projeto.`;
+    sv.style.color = '#f87171';
+  }
+}
+
+// ── Gráfico de pizza (canvas puro) ───────────────────────
+function desenharPizza(terreno, obra, despesas, lucro, vgv) {
+  const canvas = document.getElementById('pizza');
+  const ctx    = canvas.getContext('2d');
+  const total  = terreno + obra + despesas + Math.max(lucro, 0);
+  if (total <= 0) return;
+
+  const fatias = [
+    { label: 'Terreno',   valor: terreno,          cor: '#818cf8' },
+    { label: 'Obra',      valor: obra,              cor: '#22d3ee' },
+    { label: 'Despesas',  valor: despesas,          cor: '#fb923c' },
+    { label: 'Lucro',     valor: Math.max(lucro,0), cor: '#4ade80' },
+  ].filter(f => f.valor > 0);
+
+  const cx = canvas.width / 2, cy = canvas.height / 2, r = 90;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  let angulo = -Math.PI / 2;
+  fatias.forEach(f => {
+    const slice = (f.valor / total) * 2 * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angulo, angulo + slice);
+    ctx.closePath();
+    ctx.fillStyle = f.cor;
+    ctx.fill();
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    angulo += slice;
+  });
+
+  // Legenda
+  const legend = document.getElementById('pizza-legend');
+  legend.innerHTML = fatias.map(f => {
+    const pct = ((f.valor / total) * 100).toFixed(1);
+    return `<div class="legend-item">
+      <span class="legend-dot" style="background:${f.cor}"></span>
+      <span class="legend-label">${f.label}</span>
+      <span class="legend-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Limpar ───────────────────────────────────────────────
+function novaAnalise() {
+  document.getElementById('form').reset();
+  document.getElementById('pct_indireto').value = '20';
+  document.getElementById('pct_comercial').value = '6';
+  document.getElementById('pct_impostos').value = '6.73';
+  const ids = ['res_direto','res_indireto','res_obra','res_empreend',
+               'res_comercial','res_impostos','res_liquida','res_lucro',
+               'res_margem_vgv','res_margem_custo','res_roi','res_payback'];
+  ids.forEach(id => { document.getElementById(id).textContent = '—'; });
+  atualizarSemaforo(0, 0, 0);
+  document.getElementById('pizza-legend').innerHTML = '';
+  const ctx = document.getElementById('pizza').getContext('2d');
+  ctx.clearRect(0, 0, 220, 220);
+}
+
+// ── Salvar ───────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+async function salvar() {
+  const d = calcular();
+  if (!d.empreend || !d.vgv) {
+    showToast('Preencha custo do terreno, custo por m² e verifique o Módulo 2.', 'error');
+    return;
+  }
+  const payload = {
+    custo_terreno:   d.terreno,
+    custo_m2:        g('custo_m2'),
+    pct_indireto:    g('pct_indireto'),
+    pct_comercial:   g('pct_comercial'),
+    pct_impostos:    g('pct_impostos'),
+    prazo_obra:      g('prazo_obra'),
+    vel_vendas:      g('vel_vendas'),
+    custo_direto:    d.direto,
+    custo_indireto:  d.indireto,
+    custo_obra:      d.obra,
+    custo_empreend:  d.empreend,
+    desp_comercial:  d.despCom,
+    impostos:        d.impostos,
+    receita_liquida: d.liquida,
+    lucro_bruto:     d.lucro,
+    margem_vgv:      d.margemVgv,
+    margem_custo:    d.margemCust,
+    roi:             d.roi,
+    payback:         d.payback,
+    vgv_ref:         d.vgv,
+    area_cons_ref:   _areaCons,
+  };
+  const res  = await fetch('/api/viabilidade/salvar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (data.success) showToast('✅ Análise de viabilidade salva!');
+  else showToast('Erro ao salvar.', 'error');
+}
+</script>
+
+</body>
+</html>

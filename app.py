@@ -37,6 +37,27 @@ def salvar():
 def listar():
     return jsonify(_load(DATA_FILE))
 
+# ── Módulo 3 ──────────────────────────────────────────────
+VIAB_FILE = os.path.join(os.path.dirname(__file__), 'data', 'viabilidades.json')
+
+@app.route('/viabilidade')
+def viabilidade():
+    return render_template('viabilidade.html')
+
+@app.route('/api/viabilidade/salvar', methods=['POST'])
+def salvar_viabilidade():
+    dados = request.get_json()
+    dados['id'] = datetime.now().strftime('%Y%m%d%H%M%S')
+    dados['created_at'] = datetime.now().isoformat()
+    lista = _load(VIAB_FILE)
+    lista.append(dados)
+    _save(VIAB_FILE, lista)
+    return jsonify({'success': True, 'id': dados['id']})
+
+@app.route('/api/viabilidade/lista', methods=['GET'])
+def listar_viabilidades():
+    return jsonify(_load(VIAB_FILE))
+
 # ── Módulo 2 ──────────────────────────────────────────────
 @app.route('/produto')
 def produto():
