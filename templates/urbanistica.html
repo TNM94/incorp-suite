@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Módulo 4 — Análise Urbanística</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-icon">🏗</span>
+    <span class="brand-name">IncorpSuite</span>
+    <span class="brand-module">/ Módulo 4 — Análise Urbanística</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="novaAnalise()">+ Nova Análise</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-label">Módulos</p>
+      <a href="/" class="sidebar-item">
+        <span class="sidebar-dot"></span> Análise do Terreno
+      </a>
+      <a href="/produto" class="sidebar-item">
+        <span class="sidebar-dot" style="background:#22d3ee"></span> Estudo do Produto
+      </a>
+      <a href="/viabilidade" class="sidebar-item">
+        <span class="sidebar-dot" style="background:#34d399"></span> Viabilidade Financeira
+      </a>
+      <a href="/urbanistica" class="sidebar-item active">
+        <span class="sidebar-dot" style="background:#f59e0b"></span> Análise Urbanística
+      </a>
+      <a href="#" class="sidebar-item disabled">Simulação de VGV</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <h1 class="page-title">Análise Urbanística</h1>
+      <p class="page-sub">Avalie a inserção urbana e os índices de uso do terreno.</p>
+    </div>
+
+    <!-- BANNER REFERÊNCIA M1 + M2 -->
+    <div class="ref-banner" id="ref-banner" style="display:none">
+      <span class="ref-icon">📋</span>
+      <span class="ref-text">
+        <strong id="ref-terreno">—</strong>
+        &nbsp;|&nbsp; Terreno: <strong id="ref-area-terreno">—</strong> m²
+        &nbsp;|&nbsp; CA máx: <strong id="ref-ca">—</strong>
+        &nbsp;|&nbsp; TO máx: <strong id="ref-to">—</strong>%
+        &nbsp;|&nbsp; Unidades: <strong id="ref-unidades">—</strong>
+        &nbsp;|&nbsp; Área privativa: <strong id="ref-privativa">—</strong> m²
+      </span>
+    </div>
+
+    <form id="form" onsubmit="return false;">
+
+      <!-- DADOS DO LOCAL -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🗺</span>
+          <h2 class="card-title">Dados do Local</h2>
+        </div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Orientação Solar Predominante</label>
+            <select id="orientacao">
+              <option value="">Selecione...</option>
+              <option>Norte</option>
+              <option>Sul</option>
+              <option>Leste</option>
+              <option>Oeste</option>
+              <option>Nordeste</option>
+              <option>Noroeste</option>
+              <option>Sudeste</option>
+              <option>Sudoeste</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tipo de Via de Acesso</label>
+            <select id="tipo_via" onchange="calcular()">
+              <option value="">Selecione...</option>
+              <option value="Avenida">Avenida</option>
+              <option value="Rua">Rua</option>
+              <option value="Alameda">Alameda</option>
+              <option value="Rodovia">Rodovia</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Largura da Via (m)</label>
+            <input type="number" id="largura_via" placeholder="Ex: 18" min="0" step="0.5"/>
+          </div>
+          <div class="field">
+            <label>Distância ao Centro Urbano (km)</label>
+            <input type="number" id="dist_centro" placeholder="Ex: 4.5" min="0" step="0.1"/>
+          </div>
+        </div>
+
+        <!-- INFRAESTRUTURA -->
+        <div class="infra-group">
+          <p class="infra-label">Infraestrutura Disponível</p>
+          <div class="infra-checks">
+            <label class="check-item">
+              <input type="checkbox" id="infra_agua" onchange="calcular()"/>
+              <span class="check-box"></span>
+              <span class="check-text">💧 Água</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" id="infra_esgoto" onchange="calcular()"/>
+              <span class="check-box"></span>
+              <span class="check-text">🚰 Esgoto</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" id="infra_energia" onchange="calcular()"/>
+              <span class="check-box"></span>
+              <span class="check-text">⚡ Energia</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" id="infra_pav" onchange="calcular()"/>
+              <span class="check-box"></span>
+              <span class="check-text">🛣 Pavimentação</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" id="infra_ilum" onchange="calcular()"/>
+              <span class="check-box"></span>
+              <span class="check-text">💡 Iluminação</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÍNDICES URBANÍSTICOS: UTILIZADO vs PERMITIDO -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📐</span>
+          <h2 class="card-title">Índices Urbanísticos — Utilizado vs Permitido</h2>
+        </div>
+        <div class="compare-grid">
+          <!-- CA -->
+          <div class="compare-card">
+            <p class="compare-title">Coeficiente de Aproveitamento</p>
+            <div class="compare-row">
+              <div class="compare-side">
+                <p class="compare-sub">Utilizado (M2)</p>
+                <p class="compare-val amber" id="ca_utilizado">—</p>
+              </div>
+              <div class="compare-divider">vs</div>
+              <div class="compare-side">
+                <p class="compare-sub">Máximo (M1)</p>
+                <p class="compare-val" id="ca_maximo">—</p>
+              </div>
+            </div>
+            <div class="compare-bar-wrap">
+              <div class="compare-bar-fill" id="ca_bar" style="width:0%"></div>
+            </div>
+            <p class="compare-pct" id="ca_pct">—</p>
+          </div>
+          <!-- TO -->
+          <div class="compare-card">
+            <p class="compare-title">Taxa de Ocupação</p>
+            <div class="compare-row">
+              <div class="compare-side">
+                <p class="compare-sub">Utilizado (M2)</p>
+                <p class="compare-val amber" id="to_utilizado">—</p>
+              </div>
+              <div class="compare-divider">vs</div>
+              <div class="compare-side">
+                <p class="compare-sub">Máximo (M1)</p>
+                <p class="compare-val" id="to_maximo">—</p>
+              </div>
+            </div>
+            <div class="compare-bar-wrap">
+              <div class="compare-bar-fill" id="to_bar" style="width:0%"></div>
+            </div>
+            <p class="compare-pct" id="to_pct">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- INDICADORES CALCULADOS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h2 class="card-title">Indicadores Calculados</h2>
+        </div>
+        <div class="results-grid results-grid-3-urb">
+          <div class="result-card">
+            <p class="result-label">Densidade Construtiva</p>
+            <p class="result-value" id="res_densidade">—</p>
+            <p class="result-formula">Unidades / ha</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Índice de Eficiência</p>
+            <p class="result-value" id="res_eficiencia">—</p>
+            <p class="result-formula">Área Privativa / Área Construída</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Recuos Estimados</p>
+            <p class="result-value" id="res_recuos">—</p>
+            <p class="result-formula">Terreno − Implantação Máx.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCORES + GAUGES -->
+      <div class="card card-results">
+        <div class="card-header">
+          <span class="card-icon">🎯</span>
+          <h2 class="card-title">Scores Urbanísticos</h2>
+        </div>
+        <div class="gauges-row">
+          <div class="gauge-wrap">
+            <canvas id="gauge-infra" width="160" height="100"></canvas>
+            <p class="gauge-label">Infraestrutura</p>
+            <p class="gauge-val" id="score-infra-val">—</p>
+          </div>
+          <div class="gauge-wrap">
+            <canvas id="gauge-acess" width="160" height="100"></canvas>
+            <p class="gauge-label">Acessibilidade</p>
+            <p class="gauge-val" id="score-acess-val">—</p>
+          </div>
+          <div class="gauge-wrap gauge-geral">
+            <canvas id="gauge-geral" width="200" height="120"></canvas>
+            <p class="gauge-label">Score Geral</p>
+            <p class="gauge-val gauge-geral-val" id="score-geral-val">—</p>
+          </div>
+        </div>
+        <div class="score-badges" id="score-badges"></div>
+      </div>
+
+      <!-- MAPA PLACEHOLDER -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📍</span>
+          <h2 class="card-title">Localização</h2>
+        </div>
+        <div class="map-placeholder">
+          <div class="map-grid"></div>
+          <div class="map-pin" id="map-pin">
+            <div class="map-pin-dot"></div>
+            <div class="map-pin-pulse"></div>
+          </div>
+          <div class="map-info-box" id="map-info">
+            <p id="map-nome">Terreno não identificado</p>
+            <p id="map-endereco" style="color:#64748b;font-size:11px;margin-top:2px">Endereço não disponível</p>
+          </div>
+          <div class="map-overlay-label">Mapa esquemático — integração com mapa real disponível em versão Pro</div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="novaAnalise()">Limpar</button>
+        <button type="button" class="btn btn-primary" onclick="salvar()">
+          <span>💾</span> Salvar Análise
+        </button>
+      </div>
+
+    </form>
+
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+
+<script>
+// ── Estado refs ──────────────────────────────────────────
+let _m1 = {}, _m2 = {};
+
+async function carregarRefs() {
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch('/api/analises'),
+      fetch('/api/produto/lista')
+    ]);
+    const l1 = await r1.json();
+    const l2 = await r2.json();
+    if (l1.length) _m1 = l1[l1.length - 1];
+    if (l2.length) _m2 = l2[l2.length - 1];
+
+    if (_m1.nome || _m2.nome_produto) {
+      document.getElementById('ref-banner').style.display = 'flex';
+      document.getElementById('ref-terreno').textContent   = _m1.nome || '—';
+      document.getElementById('ref-area-terreno').textContent =
+        _m1.area_total ? fmt(_m1.area_total) : '—';
+      document.getElementById('ref-ca').textContent        = _m1.coeficiente_ap || '—';
+      document.getElementById('ref-to').textContent        = _m1.taxa_ocupacao  || '—';
+      document.getElementById('ref-unidades').textContent  = _m2.total_unidades || '—';
+      document.getElementById('ref-privativa').textContent =
+        _m2.area_privativa ? fmt(_m2.area_privativa) : '—';
+
+      // mapa
+      document.getElementById('map-nome').textContent     = _m1.nome || 'Terreno não identificado';
+      document.getElementById('map-endereco').textContent = _m1.endereco || 'Endereço não disponível';
+    }
+    calcular();
+  } catch(e) {}
+}
+carregarRefs();
+
+// ── Helpers ──────────────────────────────────────────────
+const fmt    = n => n.toLocaleString('pt-BR', {maximumFractionDigits:2});
+const fmtM2  = n => fmt(n) + ' m²';
+const fmtPct = n => fmt(n) + '%';
+const g      = id => parseFloat(document.getElementById(id).value) || 0;
+const chk    = id => document.getElementById(id).checked;
+
+// ── Score de via ─────────────────────────────────────────
+const VIA_SCORE = { Avenida: 100, Rua: 70, Alameda: 50, Rodovia: 40 };
+
+// ── Cálculo principal ────────────────────────────────────
+function calcular() {
+  const areaTer    = _m1.area_total         || 0;
+  const caMax      = _m1.coeficiente_ap     || 0;
+  const toMax      = _m1.taxa_ocupacao      || 0;
+  const areaImpl   = _m1.area_implantacao   || 0;
+  const totalUn    = _m2.total_unidades     || 0;
+  const areaPriv   = _m2.area_privativa     || 0;
+  const areaCons   = _m2.area_construida    || 0;
+
+  // CA utilizado = área construída M2 / área terreno M1
+  const caUtil = areaTer > 0 ? areaCons / areaTer : 0;
+  // TO utilizado = implantação M1 / terreno M1  (referência máxima)
+  const toUtil = areaTer > 0 ? (areaImpl / areaTer) * 100 : 0;
+
+  // Densidade (un/ha)
+  const densidade = areaTer > 0 ? (totalUn / areaTer) * 10000 : 0;
+  // Índice eficiência
+  const eficiencia = areaCons > 0 ? (areaPriv / areaCons) * 100 : 0;
+  // Recuos
+  const recuos = areaTer > 0 ? areaTer - areaImpl : 0;
+
+  // Scores
+  const infraItems = ['infra_agua','infra_esgoto','infra_energia','infra_pav','infra_ilum']
+    .filter(id => chk(id)).length;
+  const scoreInfra = (infraItems / 5) * 100;
+  const via        = document.getElementById('tipo_via').value;
+  const scoreAcess = VIA_SCORE[via] || 0;
+  const scoreGeral = via ? (scoreInfra + scoreAcess) / 2 : 0;
+
+  // Preenche cards comparativos
+  fillCompare('ca', caUtil.toFixed(2), caMax ? caMax.toFixed(2) : '—',
+              caMax > 0 ? Math.min(caUtil / caMax, 1) * 100 : 0);
+  fillCompare('to', toUtil.toFixed(1) + '%', toMax ? toMax + '%' : '—',
+              toMax > 0 ? Math.min(toUtil / toMax, 1) * 100 : 0);
+
+  // Indicadores
+  set('res_densidade',  densidade  > 0 ? fmt(densidade)  + ' un/ha' : '—');
+  set('res_eficiencia', eficiencia > 0 ? fmtPct(eficiencia)          : '—');
+  set('res_recuos',     recuos     > 0 ? fmtM2(recuos)               : '—');
+
+  // Gauges
+  drawGauge('gauge-infra', scoreInfra, 160, 100, 60);
+  drawGauge('gauge-acess', scoreAcess, 160, 100, 60);
+  drawGauge('gauge-geral', scoreGeral, 200, 120, 76);
+
+  set('score-infra-val', scoreInfra > 0 || infraItems === 0 ? Math.round(scoreInfra) : '0');
+  set('score-acess-val', via ? Math.round(scoreAcess) : '—');
+  set('score-geral-val', via || infraItems ? Math.round(scoreGeral) : '—');
+
+  renderBadges(scoreInfra, scoreAcess, scoreGeral);
+
+  return { caUtil, toUtil, densidade, eficiencia, recuos,
+           scoreInfra, scoreAcess, scoreGeral, infraItems, via };
+}
+
+function set(id, v) { document.getElementById(id).textContent = v; }
+
+function fillCompare(prefix, util, max, pct) {
+  set(prefix + '_utilizado', util);
+  set(prefix + '_maximo', max);
+  const bar = document.getElementById(prefix + '_bar');
+  bar.style.width = pct.toFixed(1) + '%';
+  const cor = pct > 90 ? '#f87171' : pct > 65 ? '#facc15' : '#4ade80';
+  bar.style.background = cor;
+  set(prefix + '_pct', pct > 0 ? pct.toFixed(1) + '% do máximo permitido' : '—');
+}
+
+// ── Gauge canvas (semi-círculo) ──────────────────────────
+function drawGauge(id, value, w, h, radius) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2, cy = h - 12;
+  const startA = Math.PI, endA = 2 * Math.PI;
+  const pct    = Math.min(Math.max(value, 0), 100) / 100;
+
+  // Fundo
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, startA, endA);
+  ctx.lineWidth = 14;
+  ctx.strokeStyle = '#1e293b';
+  ctx.stroke();
+
+  // Trilho cinza
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, startA, endA);
+  ctx.lineWidth = 14;
+  ctx.strokeStyle = '#334155';
+  ctx.stroke();
+
+  // Arco colorido
+  const cor = value >= 70 ? '#4ade80' : value >= 40 ? '#facc15' : '#f87171';
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, startA, startA + pct * Math.PI);
+  ctx.lineWidth = 14;
+  ctx.strokeStyle = cor;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Marcadores 0 / 50 / 100
+  [0, 50, 100].forEach(mark => {
+    const a = Math.PI + (mark / 100) * Math.PI;
+    const mx = cx + Math.cos(a) * (radius + 10);
+    const my = cy + Math.sin(a) * (radius + 10);
+    ctx.fillStyle = '#475569';
+    ctx.font = '9px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(mark, mx, my);
+  });
+}
+
+// ── Badges de score ──────────────────────────────────────
+function renderBadges(si, sa, sg) {
+  if (!sg) { document.getElementById('score-badges').innerHTML = ''; return; }
+  const nivel = sg >= 70 ? ['Bom potencial urbanístico','badge-green']
+              : sg >= 40 ? ['Potencial moderado','badge-yellow']
+              :             ['Potencial baixo — revisar localização','badge-red'];
+  document.getElementById('score-badges').innerHTML =
+    `<span class="score-badge ${nivel[1]}">${nivel[0]}</span>`;
+}
+
+// ── Limpar ───────────────────────────────────────────────
+function novaAnalise() {
+  document.getElementById('form').reset();
+  ['res_densidade','res_eficiencia','res_recuos',
+   'ca_utilizado','ca_maximo','ca_pct','to_utilizado','to_maximo','to_pct',
+   'score-infra-val','score-acess-val','score-geral-val'].forEach(id => set(id, '—'));
+  ['ca_bar','to_bar'].forEach(id => {
+    document.getElementById(id).style.width = '0%';
+  });
+  document.getElementById('score-badges').innerHTML = '';
+  ['gauge-infra','gauge-acess','gauge-geral'].forEach(id => {
+    const c = document.getElementById(id);
+    c.getContext('2d').clearRect(0, 0, c.width, c.height);
+  });
+}
+
+// ── Toast / Salvar ───────────────────────────────────────
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+async function salvar() {
+  const d = calcular();
+  const infras = ['agua','esgoto','energia','pav','ilum']
+    .filter(x => chk('infra_' + x));
+
+  const payload = {
+    orientacao:    document.getElementById('orientacao').value,
+    tipo_via:      document.getElementById('tipo_via').value,
+    largura_via:   g('largura_via'),
+    dist_centro:   g('dist_centro'),
+    infraestrutura: infras,
+    ca_utilizado:  d.caUtil,
+    to_utilizado:  d.toUtil,
+    densidade:     d.densidade,
+    eficiencia:    d.eficiencia,
+    recuos:        d.recuos,
+    score_infra:   d.scoreInfra,
+    score_acess:   d.scoreAcess,
+    score_geral:   d.scoreGeral,
+    ref_m1_id:     _m1.id || null,
+    ref_m2_id:     _m2.id || null,
+  };
+
+  const res  = await fetch('/api/urbanistica/salvar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (data.success) showToast('✅ Análise urbanística salva!');
+  else showToast('Erro ao salvar.', 'error');
+}
+</script>
+
+</body>
+</html>

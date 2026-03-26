@@ -1,0 +1,95 @@
+[
+  {
+    "nome_produto": "RESIDENCIAL EXEMPLO",
+    "tipologia": "Condomínio de casas",
+    "pavimentos": 57,
+    "valor_m2": 5500,
+    "mix": {
+      "studio": {
+        "qtd": 0,
+        "area": 0
+      },
+      "1q": {
+        "qtd": 0,
+        "area": 0
+      },
+      "2q": {
+        "qtd": 0,
+        "area": 0
+      },
+      "3q": {
+        "qtd": 57,
+        "area": 84
+      }
+    },
+    "total_unidades": 57,
+    "area_privativa": 4788,
+    "area_comum": 1675.8,
+    "area_construida": 6463.8,
+    "vgv_estimado": 26334000,
+    "id": "20260326175428",
+    "created_at": "2026-03-26T17:54:28.690796"
+  },
+  {
+    "nome_produto": "RESIDENCIAL EXEMPLO",
+    "tipologia": "Condomínio de casas",
+    "pavimentos": 57,
+    "valor_m2": 5500,
+    "mix": {
+      "studio": {
+        "qtd": 0,
+        "area": 0
+      },
+      "1q": {
+        "qtd": 0,
+        "area": 0
+      },
+      "2q": {
+        "qtd": 0,
+        "area": 0
+      },
+      "3q": {
+        "qtd": 57,
+        "area": 84
+      }
+    },
+    "total_unidades": 57,
+    "area_privativa": 4788,
+    "area_comum": 1675.8,
+    "area_construida": 6463.8,
+    "vgv_estimado": 26334000,
+    "id": "20260326175433",
+    "created_at": "2026-03-26T17:54:33.209616"
+  },
+  {
+    "nome_produto": "RESIDENCIAL EXEMPLO",
+    "tipologia": "Condomínio de casas",
+    "pavimentos": 57,
+    "valor_m2": 5500,
+    "mix": {
+      "studio": {
+        "qtd": 0,
+        "area": 0
+      },
+      "1q": {
+        "qtd": 0,
+        "area": 0
+      },
+      "2q": {
+        "qtd": 0,
+        "area": 0
+      },
+      "3q": {
+        "qtd": 57,
+        "area": 84
+      }
+    },
+    "total_unidades": 57,
+    "area_privativa": 4788,
+    "area_comum": 1675.8,
+    "area_construida": 6463.8,
+    "vgv_estimado": 26334000,
+    "id": "20260326175450",
+    "created_at": "2026-03-26T17:54:50.822688"
+  }
+]

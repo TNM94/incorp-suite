@@ -37,6 +37,27 @@ def salvar():
 def listar():
     return jsonify(_load(DATA_FILE))
 
+# ── Módulo 4 ──────────────────────────────────────────────
+URB_FILE = os.path.join(os.path.dirname(__file__), 'data', 'urbanisticas.json')
+
+@app.route('/urbanistica')
+def urbanistica():
+    return render_template('urbanistica.html')
+
+@app.route('/api/urbanistica/salvar', methods=['POST'])
+def salvar_urbanistica():
+    dados = request.get_json()
+    dados['id'] = datetime.now().strftime('%Y%m%d%H%M%S')
+    dados['created_at'] = datetime.now().isoformat()
+    lista = _load(URB_FILE)
+    lista.append(dados)
+    _save(URB_FILE, lista)
+    return jsonify({'success': True, 'id': dados['id']})
+
+@app.route('/api/urbanistica/lista', methods=['GET'])
+def listar_urbanisticas():
+    return jsonify(_load(URB_FILE))
+
 # ── Módulo 3 ──────────────────────────────────────────────
 VIAB_FILE = os.path.join(os.path.dirname(__file__), 'data', 'viabilidades.json')
 
