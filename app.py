@@ -37,6 +37,23 @@ def salvar():
 def listar():
     return jsonify(_load(DATA_FILE))
 
+# ── Módulo 7 ──────────────────────────────────────────────
+JUR_FILE = os.path.join(os.path.dirname(__file__), 'data', 'juridicas.json')
+
+@app.route('/juridico')
+def juridico():
+    return render_template('juridico.html')
+
+@app.route('/api/juridico/salvar', methods=['POST'])
+def salvar_juridico():
+    dados = request.get_json()
+    dados['id'] = datetime.now().strftime('%Y%m%d%H%M%S')
+    dados['created_at'] = datetime.now().isoformat()
+    lista = _load(JUR_FILE)
+    lista.append(dados)
+    _save(JUR_FILE, lista)
+    return jsonify({'success': True, 'id': dados['id']})
+
 # ── Módulo 6 ──────────────────────────────────────────────
 CRED_FILE = os.path.join(os.path.dirname(__file__), 'data', 'creditos.json')
 

@@ -781,3 +781,176 @@ body {
 }
 .financ-item-label { font-size: 13px; color: #64748b; }
 .financ-item-val   { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+
+/* ── MÓDULO 7 ────────────────────────────────────────── */
+
+/* LAYOUT 2 COLUNAS */
+.jur-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 960px) { .jur-layout { grid-template-columns: 1fr; } }
+.jur-col-left, .jur-col-right { display: flex; flex-direction: column; gap: 20px; }
+
+/* CARD COUNTER */
+.card-counter {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 20px;
+  padding: 3px 12px;
+}
+
+/* CHECKLIST */
+.jur-checklist { display: flex; flex-direction: column; gap: 8px; }
+
+.jur-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  user-select: none;
+}
+.jur-item:hover { border-color: #334155; }
+.jur-item input { display: none; }
+
+.jur-chk-box {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 2px solid #334155;
+  background: #1e293b;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all .2s;
+  font-size: 13px;
+  font-weight: 800;
+}
+.jur-chk-label { flex: 1; font-size: 13px; color: #94a3b8; transition: color .2s; }
+.jur-chk-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  padding: 2px 9px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* Estados ok */
+.jur-item-ok { border-color: #166534; background: rgba(74,222,128,.04); }
+.jur-item-ok .jur-chk-box  { background: #16a34a; border-color: #16a34a; color: #fff; }
+.jur-item-ok .jur-chk-label{ color: #86efac; }
+
+/* Estados risk */
+.jur-item-risk { border-color: #7f1d1d; background: rgba(248,113,113,.05); }
+.jur-item-risk .jur-chk-box  { background: #dc2626; border-color: #dc2626; color: #fff; }
+.jur-item-risk .jur-chk-label{ color: #fca5a5; }
+
+/* Estados warn */
+.jur-item-warn { border-color: #78350f; background: rgba(251,191,36,.04); }
+.jur-item-warn .jur-chk-box  { background: #d97706; border-color: #d97706; color: #fff; }
+.jur-item-warn .jur-chk-label{ color: #fcd34d; }
+
+/* Badge tipos */
+.badge-ok   { background: rgba(74,222,128,.12);  color: #4ade80; }
+.badge-pend { background: rgba(100,116,139,.12); color: #94a3b8; }
+.badge-risk { background: rgba(248,113,113,.15); color: #f87171; }
+.badge-warn { background: rgba(251,191,36,.15);  color: #fbbf24; }
+
+/* SCORE CARD */
+.jur-score-card { position: sticky; top: 72px; }
+
+/* PARECER */
+.parecer-card {
+  border-radius: 14px;
+  padding: 24px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  text-align: center;
+  transition: background .3s, border-color .3s;
+}
+.parecer-icon   { font-size: 36px; margin-bottom: 10px; }
+.parecer-titulo { font-size: 15px; font-weight: 800; color: #94a3b8; margin-bottom: 10px; transition: color .3s; }
+.parecer-texto  { font-size: 13px; color: #64748b; line-height: 1.6; }
+
+.parecer-verde   { border-color: #16a34a; background: rgba(74,222,128,.05); }
+.parecer-verde   .parecer-titulo { color: #4ade80; }
+.parecer-amarelo { border-color: #d97706; background: rgba(251,191,36,.05); }
+.parecer-amarelo .parecer-titulo { color: #fbbf24; }
+.parecer-laranja { border-color: #ea580c; background: rgba(251,146,60,.05); }
+.parecer-laranja .parecer-titulo { color: #fb923c; }
+.parecer-vermelho{ border-color: #dc2626; background: rgba(248,113,113,.05); }
+.parecer-vermelho .parecer-titulo{ color: #f87171; }
+
+/* badge laranja (M7 único) */
+.badge-orange { background: rgba(251,146,60,.15); color: #fb923c; border: 1px solid #fb923c; }
+
+/* PENDÊNCIAS */
+.pendencias-vazio { font-size: 13px; color: #475569; padding: 8px 0; }
+.pend-item {
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.pend-risk { background: rgba(248,113,113,.08); color: #fca5a5; border-left: 3px solid #f87171; }
+.pend-warn { background: rgba(251,191,36,.08);  color: #fcd34d; border-left: 3px solid #fbbf24; }
+.pend-doc  { background: rgba(100,116,139,.08); color: #94a3b8; border-left: 3px solid #475569; }
+
+/* UPLOAD */
+.upload-zone {
+  border: 2px dashed #334155;
+  border-radius: 12px;
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.upload-zone:hover, .upload-zone-filled { border-color: #f43f5e; background: rgba(244,63,94,.04); }
+.upload-icon  { font-size: 28px; display: block; margin-bottom: 8px; }
+.upload-title { font-size: 14px; font-weight: 600; color: #94a3b8; margin-bottom: 4px; }
+.upload-sub   { font-size: 12px; color: #475569; }
+
+.upload-list  { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.upload-item  {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.upload-file-icon { font-size: 18px; }
+.upload-file-name { flex: 1; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-file-size { color: #475569; font-size: 11px; }
+.upload-file-tag  {
+  background: rgba(244,63,94,.15); color: #f43f5e;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px;
+}
+
+textarea {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #e2e8f0;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+  transition: border-color .15s;
+}
+textarea:focus { border-color: #f43f5e; }
+textarea::placeholder { color: #475569; }

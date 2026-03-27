@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Módulo 7 — Jurídico e Documental</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-icon">🏗</span>
+    <span class="brand-name">IncorpSuite</span>
+    <span class="brand-module">/ Módulo 7 — Análise Jurídica e Documental</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="novaAnalise()">+ Nova Análise</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-label">Módulos</p>
+      <a href="/" class="sidebar-item"><span class="sidebar-dot"></span> Análise do Terreno</a>
+      <a href="/produto" class="sidebar-item"><span class="sidebar-dot" style="background:#22d3ee"></span> Estudo do Produto</a>
+      <a href="/viabilidade" class="sidebar-item"><span class="sidebar-dot" style="background:#34d399"></span> Viabilidade Financeira</a>
+      <a href="/urbanistica" class="sidebar-item"><span class="sidebar-dot" style="background:#f59e0b"></span> Análise Urbanística</a>
+      <a href="/demanda" class="sidebar-item"><span class="sidebar-dot" style="background:#e879f9"></span> Demanda Regional</a>
+      <a href="/credito" class="sidebar-item"><span class="sidebar-dot" style="background:#38bdf8"></span> Financiabilidade e Crédito</a>
+      <a href="/juridico" class="sidebar-item active"><span class="sidebar-dot" style="background:#f43f5e"></span> Jurídico e Documental</a>
+      <a href="#" class="sidebar-item disabled">Simulação de VGV</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <h1 class="page-title">Análise Jurídica e Documental</h1>
+      <p class="page-sub">Avalie a situação documental e jurídica do terreno para incorporação.</p>
+    </div>
+
+    <!-- BANNER REFS -->
+    <div class="ref-banner" id="ref-banner" style="display:none">
+      <span class="ref-icon">📋</span>
+      <span class="ref-text">
+        Terreno: <strong id="ref-nome">—</strong>
+        &nbsp;|&nbsp; <strong id="ref-endereco">—</strong>
+      </span>
+    </div>
+
+    <form id="form" onsubmit="return false;">
+
+      <div class="jur-layout">
+
+        <!-- COLUNA ESQUERDA: checklists + upload -->
+        <div class="jur-col-left">
+
+          <!-- DOCUMENTAÇÃO DO TERRENO -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📄</span>
+              <h2 class="card-title">Documentação do Terreno</h2>
+              <span class="card-counter" id="counter-docs">0 / 7</span>
+            </div>
+            <div class="jur-checklist" id="checklist-docs">
+              <!-- tipo: ok | risk | warn -->
+              <!-- ok = positivo quando marcado; risk = negativo; warn = atenção -->
+            </div>
+          </div>
+
+          <!-- RESTRIÇÕES E CONDICIONANTES -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">⚠️</span>
+              <h2 class="card-title">Restrições e Condicionantes</h2>
+              <span class="card-counter" id="counter-rest">0 marcados</span>
+            </div>
+            <div class="jur-checklist" id="checklist-rest"></div>
+          </div>
+
+          <!-- UPLOAD SIMULADO -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📎</span>
+              <h2 class="card-title">Documentos Anexados</h2>
+            </div>
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+              <span class="upload-icon">📁</span>
+              <p class="upload-title">Clique para anexar matrícula</p>
+              <p class="upload-sub">PDF ou imagem — apenas registro, não processado</p>
+              <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="registrarArquivo(this)"/>
+            </div>
+            <div class="upload-list" id="upload-list"></div>
+
+            <div class="field" style="margin-top:16px">
+              <label>Observações Jurídicas</label>
+              <textarea id="observacoes" rows="4" placeholder="Registre aqui pendências, alertas do advogado, notas da due diligence..."></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUNA DIREITA: score + parecer + pendências -->
+        <div class="jur-col-right">
+
+          <!-- SCORE GAUGE -->
+          <div class="card card-results jur-score-card">
+            <div class="card-header">
+              <span class="card-icon">⚖️</span>
+              <h2 class="card-title">Score Jurídico</h2>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:8px 0">
+              <canvas id="gauge-jur" width="200" height="120"></canvas>
+              <p class="gauge-label">Score Jurídico</p>
+              <p class="gauge-val gauge-geral-val" id="score-jur-val">0</p>
+            </div>
+            <div class="score-badges" id="score-badges"></div>
+          </div>
+
+          <!-- PARECER -->
+          <div class="parecer-card" id="parecer-card">
+            <div class="parecer-icon" id="parecer-icon">⚖️</div>
+            <div class="parecer-titulo" id="parecer-titulo">Parecer Jurídico</div>
+            <div class="parecer-texto" id="parecer-texto">Preencha o checklist para gerar o parecer automático.</div>
+          </div>
+
+          <!-- PENDÊNCIAS DESTACADAS -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🔍</span>
+              <h2 class="card-title">Pendências Identificadas</h2>
+            </div>
+            <div id="pendencias-lista">
+              <p class="pendencias-vazio">Nenhuma pendência identificada.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="novaAnalise()">Limpar</button>
+        <button type="button" class="btn btn-primary" onclick="salvar()">
+          <span>💾</span> Salvar Análise
+        </button>
+      </div>
+
+    </form>
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+
+<script>
+// ── Definição dos itens de checklist ────────────────────
+const DOCS = [
+  { id: 'doc_matricula',    label: 'Matrícula do imóvel atualizada',                tipo: 'ok'   },
+  { id: 'doc_onus',         label: 'Certidão negativa de ônus reais',               tipo: 'ok'   },
+  { id: 'doc_iptu',         label: 'Certidão negativa de IPTU',                     tipo: 'ok'   },
+  { id: 'doc_fed',          label: 'Certidão negativa de débitos federais',         tipo: 'ok'   },
+  { id: 'doc_consulta',     label: 'Consulta prévia aprovada pela prefeitura',      tipo: 'ok'   },
+  { id: 'doc_indisponib',   label: 'Sem indisponibilidades judiciais',              tipo: 'ok'   },
+  { id: 'doc_acoes',        label: 'Sem ações judiciais vinculadas',                tipo: 'ok'   },
+];
+const RESTRICOES = [
+  { id: 'res_app',          label: 'Área de APP presente',                          tipo: 'risk', penalidade: -20 },
+  { id: 'res_tombamento',   label: 'Tombamento histórico',                          tipo: 'risk', penalidade: -20 },
+  { id: 'res_publico',      label: 'Sobreposição com terras públicas',              tipo: 'risk', penalidade: -20 },
+  { id: 'res_reurb',        label: 'Área de regularização fundiária Reurb',         tipo: 'warn', penalidade: -10 },
+  { id: 'res_servidao',     label: 'Servidões identificadas',                       tipo: 'warn', penalidade: -10 },
+  { id: 'res_clausulas',    label: 'Cláusulas restritivas na matrícula',            tipo: 'warn', penalidade: -10 },
+];
+
+let _arquivos = [];
+
+// ── Render checklists ────────────────────────────────────
+function renderChecklist(containerId, items) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(item => `
+    <label class="jur-item" id="wrap-${item.id}" data-tipo="${item.tipo}" onclick="calcular()">
+      <input type="checkbox" id="${item.id}" class="jur-chk"/>
+      <span class="jur-chk-box" id="box-${item.id}">
+        <span class="jur-chk-icon"></span>
+      </span>
+      <span class="jur-chk-label">${item.label}</span>
+      <span class="jur-chk-badge" id="badge-${item.id}"></span>
+    </label>
+  `).join('');
+
+  // Atualiza visual a cada clique
+  items.forEach(item => {
+    document.getElementById(item.id).addEventListener('change', () => {
+      atualizarItemVisual(item);
+      calcular();
+    });
+  });
+}
+
+function atualizarItemVisual(item) {
+  const chk  = document.getElementById(item.id).checked;
+  const wrap = document.getElementById('wrap-' + item.id);
+  const box  = document.getElementById('box-'  + item.id);
+  const badge= document.getElementById('badge-'+ item.id);
+  const icon = box.querySelector('.jur-chk-icon');
+
+  wrap.className = 'jur-item';
+  if (item.tipo === 'ok') {
+    if (chk) {
+      wrap.classList.add('jur-item-ok');
+      icon.textContent = '✓';
+      badge.textContent = 'OK';
+      badge.className = 'jur-chk-badge badge-ok';
+    } else {
+      icon.textContent = '';
+      badge.textContent = 'Pendente';
+      badge.className = 'jur-chk-badge badge-pend';
+    }
+  } else if (item.tipo === 'risk') {
+    if (chk) {
+      wrap.classList.add('jur-item-risk');
+      icon.textContent = '✕';
+      badge.textContent = 'RISCO';
+      badge.className = 'jur-chk-badge badge-risk';
+    } else {
+      icon.textContent = '';
+      badge.textContent = 'OK';
+      badge.className = 'jur-chk-badge badge-ok';
+    }
+  } else { // warn
+    if (chk) {
+      wrap.classList.add('jur-item-warn');
+      icon.textContent = '!';
+      badge.textContent = 'ATENÇÃO';
+      badge.className = 'jur-chk-badge badge-warn';
+    } else {
+      icon.textContent = '';
+      badge.textContent = 'OK';
+      badge.className = 'jur-chk-badge badge-ok';
+    }
+  }
+}
+
+// ── Score e parecer ──────────────────────────────────────
+function calcular() {
+  // Docs positivos
+  let docsOk = 0;
+  DOCS.forEach(d => {
+    if (document.getElementById(d.id).checked) docsOk++;
+    atualizarItemVisual(d);
+  });
+
+  // Restrições
+  let penalidade = 0;
+  const pendencias = [];
+  RESTRICOES.forEach(r => {
+    const chk = document.getElementById(r.id).checked;
+    if (chk) {
+      penalidade += r.penalidade;
+      pendencias.push({ label: r.label, tipo: r.tipo });
+    }
+    atualizarItemVisual(r);
+  });
+
+  // Docs faltando
+  DOCS.forEach(d => {
+    if (!document.getElementById(d.id).checked) {
+      pendencias.push({ label: d.label + ' (não confirmada)', tipo: 'pend' });
+    }
+  });
+
+  // Score
+  const base   = docsOk * 7;           // máx 49
+  const bonus  = docsOk === 7 ? 51 : Math.round((docsOk / 7) * 51); // complemento até 100
+  let score    = Math.max(0, Math.min(100, base + bonus + penalidade));
+
+  // Contadores
+  document.getElementById('counter-docs').textContent = `${docsOk} / 7`;
+  const restMarcadas = RESTRICOES.filter(r => document.getElementById(r.id).checked).length;
+  document.getElementById('counter-rest').textContent =
+    restMarcadas > 0 ? `${restMarcadas} marcado${restMarcadas > 1 ? 's' : ''}` : '0 marcados';
+
+  // Gauge
+  drawGauge('gauge-jur', score, 200, 120, 76);
+  document.getElementById('score-jur-val').textContent = score;
+
+  // Parecer
+  atualizarParecer(score);
+
+  // Badge
+  renderBadge(score);
+
+  // Pendências
+  renderPendencias(pendencias);
+
+  return { score, docsOk, penalidade, pendencias };
+}
+
+const PARECERES = [
+  { min: 80,  icon: '✅', cls: 'parecer-verde',   titulo: 'Situação Jurídica Regular',
+    texto: 'Documentação adequada e sem restrições graves. Terreno apto para iniciar processo de incorporação.' },
+  { min: 60,  icon: '🟡', cls: 'parecer-amarelo', titulo: 'Pendências Menores Identificadas',
+    texto: 'Situação jurídica com pendências que podem ser regularizadas. Verificar os itens destacados antes de avançar.' },
+  { min: 40,  icon: '🟠', cls: 'parecer-laranja', titulo: 'Riscos Moderados — Due Diligence Necessária',
+    texto: 'Existem restrições ou ausência de documentos relevantes. Recomenda-se due diligence aprofundada com assessoria jurídica.' },
+  { min: 0,   icon: '🔴', cls: 'parecer-vermelho',titulo: 'Situação Jurídica Crítica',
+    texto: 'Restrições graves identificadas ou documentação deficiente. Não recomendado avançar sem resolução das pendências.' },
+];
+
+function atualizarParecer(score) {
+  const p = PARECERES.find(x => score >= x.min) || PARECERES[3];
+  const card = document.getElementById('parecer-card');
+  card.className = 'parecer-card ' + p.cls;
+  document.getElementById('parecer-icon').textContent  = p.icon;
+  document.getElementById('parecer-titulo').textContent= p.titulo;
+  document.getElementById('parecer-texto').textContent = p.texto;
+}
+
+function renderBadge(score) {
+  const p = PARECERES.find(x => score >= x.min) || PARECERES[3];
+  const cls = p.cls === 'parecer-verde' ? 'badge-green'
+    : p.cls === 'parecer-amarelo' ? 'badge-yellow'
+    : p.cls === 'parecer-laranja' ? 'badge-orange'
+    : 'badge-red';
+  document.getElementById('score-badges').innerHTML =
+    `<span class="score-badge ${cls}">${p.titulo}</span>`;
+}
+
+function renderPendencias(pendencias) {
+  const el = document.getElementById('pendencias-lista');
+  if (!pendencias.length) {
+    el.innerHTML = '<p class="pendencias-vazio">Nenhuma pendência identificada. ✅</p>';
+    return;
+  }
+  el.innerHTML = pendencias.map(p => {
+    const cls  = p.tipo === 'risk' ? 'pend-risk' : p.tipo === 'warn' ? 'pend-warn' : 'pend-doc';
+    const icon = p.tipo === 'risk' ? '🔴' : p.tipo === 'warn' ? '🟡' : '⬜';
+    return `<div class="pend-item ${cls}">${icon} ${p.label}</div>`;
+  }).join('');
+}
+
+// ── Gauge ────────────────────────────────────────────────
+function drawGauge(id, value, w, h, radius) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+  const cx = w/2, cy = h-12;
+  ctx.beginPath(); ctx.arc(cx,cy,radius,Math.PI,2*Math.PI);
+  ctx.lineWidth=14; ctx.strokeStyle='#334155'; ctx.stroke();
+  const pct = Math.min(Math.max(value,0),100)/100;
+  const cor = value>=80?'#4ade80':value>=60?'#facc15':value>=40?'#fb923c':'#f87171';
+  ctx.beginPath(); ctx.arc(cx,cy,radius,Math.PI,Math.PI+pct*Math.PI);
+  ctx.lineWidth=14; ctx.strokeStyle=cor; ctx.lineCap='round'; ctx.stroke();
+  [0,50,100].forEach(m => {
+    const a = Math.PI+(m/100)*Math.PI;
+    ctx.fillStyle='#475569'; ctx.font='9px system-ui'; ctx.textAlign='center';
+    ctx.fillText(m, cx+Math.cos(a)*(radius+10), cy+Math.sin(a)*(radius+10));
+  });
+}
+
+// ── Upload simulado ──────────────────────────────────────
+function registrarArquivo(input) {
+  if (!input.files.length) return;
+  const file = input.files[0];
+  _arquivos.push(file.name);
+  const list = document.getElementById('upload-list');
+  const item = document.createElement('div');
+  item.className = 'upload-item';
+  item.innerHTML = `<span class="upload-file-icon">📄</span>
+    <span class="upload-file-name">${file.name}</span>
+    <span class="upload-file-size">${(file.size/1024).toFixed(1)} KB</span>
+    <span class="upload-file-tag">Anexado</span>`;
+  list.appendChild(item);
+  document.getElementById('upload-zone').classList.add('upload-zone-filled');
+}
+
+// ── Refs M1 ──────────────────────────────────────────────
+async function carregarRefs() {
+  try {
+    const res = await fetch('/api/analises');
+    const l   = await res.json();
+    if (!l.length) return;
+    const m1 = l[l.length-1];
+    document.getElementById('ref-banner').style.display = 'flex';
+    document.getElementById('ref-nome').textContent     = m1.nome     || '—';
+    document.getElementById('ref-endereco').textContent = m1.endereco || '—';
+  } catch(e) {}
+}
+carregarRefs();
+
+// ── Inicializa ───────────────────────────────────────────
+renderChecklist('checklist-docs', DOCS);
+renderChecklist('checklist-rest', RESTRICOES);
+calcular();
+
+// ── Limpar ───────────────────────────────────────────────
+function novaAnalise() {
+  document.getElementById('form').reset();
+  _arquivos = [];
+  document.getElementById('upload-list').innerHTML = '';
+  document.getElementById('upload-zone').classList.remove('upload-zone-filled');
+  [...DOCS, ...RESTRICOES].forEach(item => {
+    document.getElementById(item.id).checked = false;
+    atualizarItemVisual(item);
+  });
+  calcular();
+}
+
+// ── Toast / Salvar ───────────────────────────────────────
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.className='toast show '+type; setTimeout(()=>t.className='toast',3000);
+}
+
+async function salvar() {
+  const d = calcular();
+  const docsStatus = {};
+  DOCS.forEach(x => docsStatus[x.id] = document.getElementById(x.id).checked);
+  const restStatus = {};
+  RESTRICOES.forEach(x => restStatus[x.id] = document.getElementById(x.id).checked);
+
+  const payload = {
+    docs:        docsStatus,
+    restricoes:  restStatus,
+    score:       d.score,
+    docs_ok:     d.docsOk,
+    arquivos:    _arquivos,
+    observacoes: document.getElementById('observacoes').value,
+    pendencias:  d.pendencias.map(p => p.label),
+  };
+  const res  = await fetch('/api/juridico/salvar',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const data = await res.json();
+  if (data.success) showToast('✅ Análise jurídica salva!');
+  else showToast('Erro ao salvar.','error');
+}
+</script>
+
+</body>
+</html>

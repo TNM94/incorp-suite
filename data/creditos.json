@@ -1,0 +1,42 @@
+[
+  {
+    "taxa_aa": 13.5,
+    "prazo_anos": 30,
+    "entrada_pct": 20,
+    "multiplo": 4,
+    "valor_unidade": 462000,
+    "valor_financiado": 369600,
+    "parcela": 4233.443407419974,
+    "renda_min": 16933.773629679898,
+    "comprometimento": 70.55739012366624,
+    "score_financ": 20,
+    "is_sfh": true,
+    "is_sfi": false,
+    "is_fgts": true,
+    "vgv_ref": 26334000,
+    "unidades_ref": 57,
+    "renda_regional": 6000,
+    "id": "20260326181338",
+    "created_at": "2026-03-26T18:13:38.304833"
+  },
+  {
+    "taxa_aa": 13.5,
+    "prazo_anos": 30,
+    "entrada_pct": 20,
+    "multiplo": 5,
+    "valor_unidade": 462000,
+    "valor_financiado": 369600,
+    "parcela": 4233.443407419974,
+    "renda_min": 21167.217037099872,
+    "comprometimento": 70.55739012366624,
+    "score_financ": 20,
+    "is_sfh": true,
+    "is_sfi": false,
+    "is_fgts": true,
+    "vgv_ref": 26334000,
+    "unidades_ref": 57,
+    "renda_regional": 6000,
+    "id": "20260326181343",
+    "created_at": "2026-03-26T18:13:43.872601"
+  }
+]
